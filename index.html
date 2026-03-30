@@ -38,7 +38,10 @@
 
         <!-- Desktop Words Sidebar -->
         <aside id="wordSidebar" class="hidden md:flex flex-col w-40 sm:w-48 bg-white border-l overflow-y-auto sidebar-scroll p-2">
-            <h2 class="text-xs font-bold text-gray-500 mb-4">الكلمات</h2>
+            <div id="selectedPageLabel" class="hidden sticky top-0 bg-blue-500 text-white px-4 py-3 rounded mb-3 text-base font-bold text-center z-10">
+                الصفحة: <span id="selectedPageNumber"></span>
+            </div>
+            <h2 class="sticky top-14 z-10 bg-white text-base font-bold text-red-600 mb-2 py-2 text-center">الكلمات</h2>
             <div id="wordList" class="space-y-1"></div>
         </aside>
 
@@ -55,7 +58,10 @@
 
             <!-- Mobile Words Display -->
             <div id="mobileWordsBox" class="md:hidden mb-6 bg-white border rounded-lg p-4">
-                <h3 class="text-sm font-bold text-gray-700 mb-3">الكلمات</h3>
+                <div id="mobileSelectedPageLabel" class="hidden sticky top-0 bg-blue-500 text-white px-4 py-3 rounded mb-3 text-lg font-bold text-center z-10">
+                    الصفحة: <span id="mobileSelectedPageNumber"></span>
+                </div>
+                <h3 class="sticky top-16 z-10 bg-white text-lg font-bold text-red-600 mb-2 py-2 text-center">الكلمات</h3>
                 <div id="mobileWordList" class="space-y-2 max-h-64 overflow-y-auto">
                     <p class="text-xs text-gray-400">اختر صفحة أولاً</p>
                 </div>
@@ -106,6 +112,10 @@
         const wordSidebar = document.getElementById('wordSidebar');
         const welcomeMessage = document.getElementById('welcomeMessage');
         const detailsArea = document.getElementById('detailsArea');
+        const selectedPageLabel = document.getElementById('selectedPageLabel');
+        const selectedPageNumber = document.getElementById('selectedPageNumber');
+        const mobileSelectedPageLabel = document.getElementById('mobileSelectedPageLabel');
+        const mobileSelectedPageNumber = document.getElementById('mobileSelectedPageNumber');
 
         // =============================================
         // Event Listeners
@@ -173,14 +183,14 @@
 
         function filterWordsByPage(pageNum) {
             const filtered = fullData.filter(item => item.Page === pageNum);
-            displayWords(filtered);
+            displayWords(filtered, pageNum);
             closeMobileMenu();
         }
 
         // =============================================
         // Word Display Functions
         // =============================================
-        function displayWords(words) {
+        function displayWords(words, pageNum = null) {
             const wordHTML = words.map(w => `
                 <button onclick="showDetails(${fullData.indexOf(w)})" 
                         class="w-full text-right px-2 sm:px-3 py-2 rounded hover:bg-gray-100 text-xs sm:text-sm border-b border-gray-50">
@@ -190,6 +200,14 @@
             
             wordList.innerHTML = wordHTML;
             mobileWordList.innerHTML = wordHTML;
+            
+            // Show page number label if pageNum is provided
+            if(pageNum !== null) {
+                selectedPageNumber.innerText = pageNum;
+                selectedPageLabel.classList.remove('hidden');
+                mobileSelectedPageNumber.innerText = pageNum;
+                mobileSelectedPageLabel.classList.remove('hidden');
+            }
             
             if(words.length > 0) {
                 welcomeMessage.classList.add('hidden');
@@ -220,6 +238,8 @@
                 renderPageSidebar(fullData);
                 wordList.innerHTML = "";
                 mobileWordList.innerHTML = "<p class=\"text-xs text-gray-400\">اختر صفحة أولاً</p>";
+                selectedPageLabel.classList.add('hidden');
+                mobileSelectedPageLabel.classList.add('hidden');
                 return;
             }
             
@@ -235,6 +255,8 @@
             
             wordList.innerHTML = searchHTML;
             mobileWordList.innerHTML = searchHTML;
+            selectedPageLabel.classList.add('hidden');
+            mobileSelectedPageLabel.classList.add('hidden');
         }
     </script>
 </body>
