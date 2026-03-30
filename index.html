@@ -74,18 +74,19 @@
 
             <!-- Details Display Area -->
             <div id="detailsArea" class="hidden">
-                <div class="flex flex-col sm:flex-row gap-3 mb-6">
-                    <div class="bg-blue-100 text-blue-800 px-3 sm:px-4 py-2 rounded-lg font-bold text-sm sm:text-base">
-                        صفحة: <span id="displayPage"></span>
-                    </div>
-                    <div class="bg-green-100 text-green-800 px-3 sm:px-4 py-2 rounded-lg font-bold text-sm sm:text-base">
-                        الكلمة: <span id="displayWord"></span>
-                    </div>
+                <div class="flex gap-4 mb-6">
+                    <div class="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg font-bold">صفحة: <span id="displayPage"></span></div>
+                    <div class="bg-green-100 text-green-800 px-4 py-2 rounded-lg font-bold">الكلمة: <span id="displayWord"></span></div>
                 </div>
                 
-                <div class="bg-white border shadow-sm rounded-xl p-4 sm:p-6 lg:p-8 min-h-[300px]">
-                    <h3 class="text-gray-400 text-xs sm:text-sm mb-4">المعلومات:</h3>
-                    <p id="displayInfo" class="text-base sm:text-lg lg:text-xl leading-relaxed text-gray-800"></p>
+                <div class="bg-white border shadow-sm rounded-xl p-8 min-h-[400px]">
+                    <h3 class="text-gray-400 text-sm mb-4">المعلومات:</h3>
+                    <p id="displayInfo" class="text-xl leading-relaxed text-gray-800 mb-6" dir="auto" style="unicode-bidi: plaintext;"></p>
+                    
+                    <div id="mediaContainer" class="mt-4 border-t pt-4 hidden">
+                        <h4 class="text-sm font-bold text-gray-500 mb-2">المرفقات:</h4>
+                        <div id="mediaContent"></div>
+                    </div>
                 </div>
             </div>
 
@@ -191,15 +192,26 @@
         // Word Display Functions
         // =============================================
         function displayWords(words, pageNum = null) {
-            const wordHTML = words.map(w => `
-                <button onclick="showDetails(${fullData.indexOf(w)})" 
-                        class="w-full text-right px-2 sm:px-3 py-2 rounded hover:bg-gray-100 text-xs sm:text-sm border-b border-gray-50">
-                    ${w.Word} <span class="text-[8px] text-gray-400">[س ${w.Line}]</span>
-                </button>
-            `).join('');
+            const wordHTML = words.map(w => {
+                const index = fullData.indexOf(w);
+                return `
+                    <button class="word-button w-full text-right px-2 sm:px-3 py-2 rounded hover:bg-gray-100 text-xs sm:text-sm border-b border-gray-50" data-index="${index}">
+                        ${w.Word} <span class="text-[8px] text-gray-400">[س ${w.Line}]</span>
+                    </button>
+                `;
+            }).join('');
             
             wordList.innerHTML = wordHTML;
             mobileWordList.innerHTML = wordHTML;
+            
+            // Add event listeners to word buttons
+            document.querySelectorAll('.word-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const index = this.dataset.index;
+                    const item = fullData[index];
+                    showDetails(item.Word, item.Page, item.Information, item.Media);
+                });
+            });
             
             // Show page number label if pageNum is provided
             if(pageNum !== null) {
@@ -214,13 +226,42 @@
             }
         }
 
-        function showDetails(index) {
-            const item = fullData[index];
-            welcomeMessage.classList.add('hidden');
-            detailsArea.classList.remove('hidden');
-            document.getElementById('displayPage').innerText = item.Page;
-            document.getElementById('displayWord').innerText = item.Word;
-            document.getElementById('displayInfo').innerText = item.Information;
+        function showDetails(word, page, info, mediaFile) {
+            document.getElementById('welcomeMessage').classList.add('hidden');
+            document.getElementById('detailsArea').classList.remove('hidden');
+            document.getElementById('displayPage').innerText = page;
+            document.getElementById('displayWord').innerText = word;
+            
+            // Replace *** with horizontal line
+            const processedInfo = info.replace(/\*\*\*/g, '<hr class="my-4 border-t-2 border-gray-300">');
+            document.getElementById('displayInfo').innerHTML = processedInfo;
+
+            const mediaContainer = document.getElementById('mediaContainer');
+            const mediaContent = document.getElementById('mediaContent');
+            
+            // Clear previous media
+            mediaContent.innerHTML = "";
+            mediaContainer.classList.add('hidden');
+
+            if (mediaFile && mediaFile.trim() !== "" && mediaFile !== "undefined") {
+                mediaContainer.classList.remove('hidden');
+                const fileExt = mediaFile.split('.').pop().toLowerCase();
+                const filePath = `assets/${mediaFile}`;
+
+                if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExt)) {
+                    // It's an image
+                    mediaContent.innerHTML = `<img src="${filePath}" class="max-w-full h-auto rounded-lg shadow-md" alt="${word}">`;
+                } else if (fileExt === 'pdf') {
+                    // It's a PDF
+                    mediaContent.innerHTML = `
+                        <div class="bg-gray-50 p-4 rounded-lg flex items-center justify-between">
+                            <span>ملف PDF مرفق</span>
+                            <a href="${filePath}" target="_blank" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">فتح الملف</a>
+                        </div>
+                        <iframe src="${filePath}" class="w-full h-[500px] mt-4 rounded border"></iframe>`;
+                }
+            }
+            
             closeMobileMenu();
         }
 
@@ -246,17 +287,28 @@
             const normalizedTerm = removeDiacritics(term);
             const results = fullData.filter(item => removeDiacritics(item.Word).includes(normalizedTerm));
             
-            const searchHTML = results.map(w => `
-                <button onclick="showDetails(${fullData.indexOf(w)})" 
-                        class="w-full text-right px-2 sm:px-3 py-2 rounded hover:bg-gray-100 text-xs sm:text-sm border-b border-gray-50">
-                    ${w.Word} <span class="text-[8px] text-gray-400">[س ${w.Line}]</span>
-                </button>
-            `).join('');
+            const searchHTML = results.map(w => {
+                const index = fullData.indexOf(w);
+                return `
+                    <button class="word-button w-full text-right px-2 sm:px-3 py-2 rounded hover:bg-gray-100 text-xs sm:text-sm border-b border-gray-50" data-index="${index}">
+                        ${w.Word} <span class="text-[8px] text-gray-400">[س ${w.Line}]</span>
+                    </button>
+                `;
+            }).join('');
             
             wordList.innerHTML = searchHTML;
             mobileWordList.innerHTML = searchHTML;
             selectedPageLabel.classList.add('hidden');
             mobileSelectedPageLabel.classList.add('hidden');
+            
+            // Add event listeners to search result buttons
+            document.querySelectorAll('.word-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const index = this.dataset.index;
+                    const item = fullData[index];
+                    showDetails(item.Word, item.Page, item.Information, item.Media);
+                });
+            });
         }
     </script>
 </body>
