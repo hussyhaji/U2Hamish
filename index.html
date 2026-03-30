@@ -15,44 +15,51 @@
 </head>
 <body class="bg-gray-50 h-screen flex flex-col">
 
-    <header class="bg-white border-b p-4 flex flex-col md:flex-row items-center justify-between gap-4">
-        <h1 class="text-xl font-bold text-blue-800">هوامش كتاب عيون الاخبار - الجزء الثاني</h1>
+    <header class="bg-white border-b p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="flex items-center gap-3 w-full sm:w-auto">
+            <button id="menuToggle" class="md:hidden p-2 hover:bg-gray-100 rounded-lg">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+            <h1 class="text-lg sm:text-xl font-bold text-blue-800 flex-1 sm:flex-none">هوامش كتاب عيون الاخبار - الجزء الثاني</h1>
+        </div>
         <input type="text" id="searchInput" placeholder="ابحث عن كلمة..." 
-               class="border rounded-lg px-4 py-2 w-full md:w-96 focus:ring-2 focus:ring-blue-500 outline-none">
+               class="border rounded-lg px-3 sm:px-4 py-2 w-full sm:w-96 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
     </header>
 
     <div class="flex flex-1 overflow-hidden">
         
-        <aside class="w-24 bg-gray-100 border-l overflow-y-auto sidebar-scroll p-2 text-center">
+        <aside id="pageSidebar" class="hidden md:flex flex-col w-20 sm:w-24 bg-gray-100 border-l overflow-y-auto sidebar-scroll p-2 text-center">
             <h2 class="text-xs font-bold text-gray-500 mb-4">الصفحة</h2>
             <div id="pageList" class="space-y-2">
                 </div>
         </aside>
 
-        <aside class="w-48 bg-white border-l overflow-y-auto sidebar-scroll p-2">
+        <aside id="wordSidebar" class="hidden md:flex flex-col w-40 sm:w-48 bg-white border-l overflow-y-auto sidebar-scroll p-2">
             <h2 class="text-xs font-bold text-gray-500 mb-4">الكلمات</h2>
             <div id="wordList" class="space-y-1">
                 </div>
         </aside>
 
-        <main class="flex-1 p-8 overflow-y-auto">
-            <div id="welcomeMessage" class="text-center mt-20 text-gray-400 italic">
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+            <div id="welcomeMessage" class="text-center mt-10 sm:mt-20 text-gray-400 italic text-sm sm:text-base">
                 الرجاء اختيار صفحة أو كلمة لعرض التفاصيل
             </div>
 
             <div id="detailsArea" class="hidden">
-                <div class="flex gap-4 mb-6">
-                    <div class="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg font-bold">
+                <div class="flex flex-col sm:flex-row gap-3 mb-6">
+                    <div class="bg-blue-100 text-blue-800 px-3 sm:px-4 py-2 rounded-lg font-bold text-sm sm:text-base">
                         صفحة: <span id="displayPage"></span>
                     </div>
-                    <div class="bg-green-100 text-green-800 px-4 py-2 rounded-lg font-bold">
+                    <div class="bg-green-100 text-green-800 px-3 sm:px-4 py-2 rounded-lg font-bold text-sm sm:text-base">
                         الكلمة: <span id="displayWord"></span>
                     </div>
                 </div>
                 
-                <div class="bg-white border shadow-sm rounded-xl p-8 min-h-[300px]">
-                    <h3 class="text-gray-400 text-sm mb-4">المعلومات:</h3>
-                    <p id="displayInfo" class="text-xl leading-relaxed text-gray-800"></p>
+                <div class="bg-white border shadow-sm rounded-xl p-4 sm:p-6 lg:p-8 min-h-[300px]">
+                    <h3 class="text-gray-400 text-xs sm:text-sm mb-4">المعلومات:</h3>
+                    <p id="displayInfo" class="text-base sm:text-lg lg:text-xl leading-relaxed text-gray-800"></p>
                 </div>
             </div>
         </main>
@@ -60,6 +67,34 @@
 
     <script>
         let fullData = [];
+        let sidebarOpen = false;
+
+        // Mobile menu toggle
+        document.getElementById('menuToggle').addEventListener('click', () => {
+            sidebarOpen = !sidebarOpen;
+            const pageSidebar = document.getElementById('pageSidebar');
+            const wordSidebar = document.getElementById('wordSidebar');
+            
+            if(sidebarOpen) {
+                pageSidebar.classList.remove('hidden');
+                pageSidebar.classList.add('fixed', 'bottom-0', 'right-0', 'top-20', 'z-40', 'w-64', 'border-l', 'flex', 'flex-col');
+                wordSidebar.classList.remove('hidden');
+                wordSidebar.classList.add('absolute', 'hidden');
+            } else {
+                pageSidebar.classList.add('hidden');
+                pageSidebar.classList.remove('fixed', 'bottom-0', 'right-0', 'top-20', 'z-40', 'w-64', 'border-l', 'flex', 'flex-col');
+                wordSidebar.classList.add('hidden');
+            }
+        });
+
+        // Close sidebar when selecting an item (mobile)
+        function closeMobileMenu() {
+            if(window.innerWidth < 768) {
+                sidebarOpen = false;
+                document.getElementById('pageSidebar').classList.add('hidden');
+                document.getElementById('wordSidebar').classList.add('hidden');
+            }
+        }
 
         // 1. Load CSV File
         Papa.parse("data.csv", {
@@ -79,7 +114,7 @@
         function renderPageSidebar(data) {
             const pages = [...new Set(data.map(item => item.Page))].sort((a, b) => a - b);
             pageList.innerHTML = pages.map(p => `
-                <button onclick="filterWordsByPage('${p}')" class="w-full py-2 rounded hover:bg-blue-500 hover:text-white transition bg-white border text-sm">
+                <button onclick="filterWordsByPage('${p}')" class="w-full py-2 rounded hover:bg-blue-500 hover:text-white transition bg-white border text-xs sm:text-sm">
                     ${p}
                 </button>
             `).join('');
@@ -89,13 +124,14 @@
         function filterWordsByPage(pageNum) {
             const filtered = fullData.filter(item => item.Page === pageNum);
             displayWords(filtered);
+            closeMobileMenu();
         }
 
         // 4. Display Words in Secondary Sidebar
         function displayWords(words) {
             wordList.innerHTML = words.map(w => `
                 <button onclick="showDetails(${fullData.indexOf(w)})" 
-                        class="w-full text-right px-3 py-2 rounded hover:bg-gray-100 text-sm border-b border-gray-50">
+                        class="w-full text-right px-2 sm:px-3 py-2 rounded hover:bg-gray-100 text-xs sm:text-sm border-b border-gray-50">
                     ${w.Word}
                 </button>
             `).join('');
@@ -109,6 +145,7 @@
             document.getElementById('displayPage').innerText = item.Page;
             document.getElementById('displayWord').innerText = item.Word;
             document.getElementById('displayInfo').innerText = item.Information;
+            closeMobileMenu();
         }
 
         // Function to remove Arabic diacritics
@@ -128,7 +165,7 @@
             const results = fullData.filter(item => removeDiacritics(item.Word).includes(normalizedTerm));
             wordList.innerHTML = results.map(w => `
                 <button onclick="showDetails(${fullData.indexOf(w)})" 
-                        class="w-full text-right px-3 py-2 rounded hover:bg-gray-100 text-sm border-b border-gray-50">
+                        class="w-full text-right px-2 sm:px-3 py-2 rounded hover:bg-gray-100 text-xs sm:text-sm border-b border-gray-50">
                     ${w.Word} <span class="text-[10px] text-gray-400">(ص ${w.Page})</span>
                 </button>
             `).join('');
