@@ -43,6 +43,14 @@
         </aside>
 
         <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+            <!-- Mobile Pages Selection -->
+            <div id="mobilePagesBox" class="md:hidden mb-4 bg-white border rounded-lg p-4">
+                <h3 class="text-sm font-bold text-gray-700 mb-3">اختر صفحة</h3>
+                <div id="mobilePageList" class="grid grid-cols-4 gap-2 max-h-32 overflow-y-auto">
+                    <p class="col-span-4 text-xs text-gray-400">جاري التحميل...</p>
+                </div>
+            </div>
+
             <!-- Mobile Words Display -->
             <div id="mobileWordsBox" class="md:hidden mb-6 bg-white border rounded-lg p-4">
                 <h3 class="text-sm font-bold text-gray-700 mb-3">الكلمات</h3>
@@ -115,18 +123,29 @@
         });
 
         const pageList = document.getElementById('pageList');
+        const mobilePageList = document.getElementById('mobilePageList');
         const wordList = document.getElementById('wordList');
         const mobileWordList = document.getElementById('mobileWordList');
         const searchInput = document.getElementById('searchInput');
 
-        // 2. Render Page Sidebar
+        // 2. Render Page Sidebar and Mobile Pages
         function renderPageSidebar(data) {
             const pages = [...new Set(data.map(item => item.Page))].sort((a, b) => a - b);
-            pageList.innerHTML = pages.map(p => `
+            const pageHTML = pages.map(p => `
                 <button onclick="filterWordsByPage('${p}')" class="w-full py-2 rounded hover:bg-blue-500 hover:text-white transition bg-white border text-xs sm:text-sm">
                     ${p}
                 </button>
             `).join('');
+            
+            pageList.innerHTML = pageHTML;
+            
+            // Mobile pages grid
+            const mobilePageHTML = pages.map(p => `
+                <button onclick="filterWordsByPage('${p}')" class="py-2 px-2 rounded hover:bg-blue-500 hover:text-white transition bg-blue-50 border text-xs font-semibold text-center">
+                    ${p}
+                </button>
+            `).join('');
+            mobilePageList.innerHTML = mobilePageHTML;
         }
 
         // 3. Filter Words by Page
@@ -147,6 +166,11 @@
             
             wordList.innerHTML = wordHTML;
             mobileWordList.innerHTML = wordHTML;
+            
+            // Show welcome message is hidden when words are displayed
+            if(words.length > 0) {
+                document.getElementById('welcomeMessage').classList.add('hidden');
+            }
         }
 
         // 5. Show Final Information
