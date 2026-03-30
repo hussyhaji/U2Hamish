@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>هوامش كتاب عيون الاخبار - الجزء الثاني</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
+        body { font-family: 'Amiri', serif; }
+        .sidebar-scroll::-webkit-scrollbar { width: 5px; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-gray-50 h-screen flex flex-col">
+
+    <header class="bg-white border-b p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+        <h1 class="text-xl font-bold text-blue-800">هوامش كتاب عيون الاخبار - الجزء الثاني</h1>
+        <input type="text" id="searchInput" placeholder="ابحث عن كلمة..." 
+               class="border rounded-lg px-4 py-2 w-full md:w-96 focus:ring-2 focus:ring-blue-500 outline-none">
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        
+        <aside class="w-24 bg-gray-100 border-l overflow-y-auto sidebar-scroll p-2 text-center">
+            <h2 class="text-xs font-bold text-gray-500 mb-4">الصفحة</h2>
+            <div id="pageList" class="space-y-2">
+                </div>
+        </aside>
+
+        <aside class="w-48 bg-white border-l overflow-y-auto sidebar-scroll p-2">
+            <h2 class="text-xs font-bold text-gray-500 mb-4">الكلمات</h2>
+            <div id="wordList" class="space-y-1">
+                </div>
+        </aside>
+
+        <main class="flex-1 p-8 overflow-y-auto">
+            <div id="welcomeMessage" class="text-center mt-20 text-gray-400 italic">
+                الرجاء اختيار صفحة أو كلمة لعرض التفاصيل
+            </div>
+
+            <div id="detailsArea" class="hidden">
+                <div class="flex gap-4 mb-6">
+                    <div class="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg font-bold">
+                        صفحة: <span id="displayPage"></span>
+                    </div>
+                    <div class="bg-green-100 text-green-800 px-4 py-2 rounded-lg font-bold">
+                        الكلمة: <span id="displayWord"></span>
+                    </div>
+                </div>
+                
+                <div class="bg-white border shadow-sm rounded-xl p-8 min-h-[300px]">
+                    <h3 class="text-gray-400 text-sm mb-4">المعلومات:</h3>
+                    <p id="displayInfo" class="text-xl leading-relaxed text-gray-800"></p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let fullData = [];
+
+        // 1. Load CSV File
+        Papa.parse("data.csv", {
+            download: true,
+            header: true,
+            complete: function(results) {
+                fullData = results.data.filter(row => row.Word); // Remove empty rows
+                renderPageSidebar(fullData);
+            }
+        });
+
+        const pageList = document.getElementById('pageList');
+        const wordList = document.getElementById('wordList');
+        const searchInput = document.getElementById('searchInput');
+
+        // 2. Render Page Sidebar
+        function renderPageSidebar(data) {
+            const pages = [...new Set(data.map(item => item.Page))].sort((a, b) => a - b);
+            pageList.innerHTML = pages.map(p => `
+                <button onclick="filterWordsByPage('${p}')" class="w-full py-2 rounded hover:bg-blue-500 hover:text-white transition bg-white border text-sm">
+                    ${p}
+                </button>
+            `).join('');
+        }
+
+        // 3. Filter Words by Page
+        function filterWordsByPage(pageNum) {
+            const filtered = fullData.filter(item => item.Page === pageNum);
+            displayWords(filtered);
+        }
+
+        // 4. Display Words in Secondary Sidebar
+        function displayWords(words) {
+            wordList.innerHTML = words.map(w => `
+                <button onclick="showDetails(${fullData.indexOf(w)})" 
+                        class="w-full text-right px-3 py-2 rounded hover:bg-gray-100 text-sm border-b border-gray-50">
+                    ${w.Word}
+                </button>
+            `).join('');
+        }
+
+        // 5. Show Final Information
+        function showDetails(index) {
+            const item = fullData[index];
+            document.getElementById('welcomeMessage').classList.add('hidden');
+            document.getElementById('detailsArea').classList.remove('hidden');
+            document.getElementById('displayPage').innerText = item.Page;
+            document.getElementById('displayWord').innerText = item.Word;
+            document.getElementById('displayInfo').innerText = item.Information;
+        }
+
+        // Function to remove Arabic diacritics
+        function removeDiacritics(text) {
+            return text.replace(/[\u064B-\u0652]/g, '');
+        }
+
+        // 6. Search Functionality
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            if(term === "") {
+                renderPageSidebar(fullData);
+                wordList.innerHTML = "";
+                return;
+            }
+            const normalizedTerm = removeDiacritics(term);
+            const results = fullData.filter(item => removeDiacritics(item.Word).includes(normalizedTerm));
+            wordList.innerHTML = results.map(w => `
+                <button onclick="showDetails(${fullData.indexOf(w)})" 
+                        class="w-full text-right px-3 py-2 rounded hover:bg-gray-100 text-sm border-b border-gray-50">
+                    ${w.Word} <span class="text-[10px] text-gray-400">(ص ${w.Page})</span>
+                </button>
+            `).join('');
+        });
+    </script>
+</body>
+</html>
