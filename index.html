@@ -89,13 +89,13 @@
                     <div class="bg-green-100 text-green-800 px-4 py-2 rounded-lg font-bold">الكلمة: <span id="displayWord"></span></div>
                 </div>
                 
-                <div class="bg-white border shadow-sm rounded-xl p-8 min-h-[400px]">
+                <div class="bg-white border shadow-sm rounded-xl p-4 sm:p-8 min-h-[400px]">
                     <h3 class="text-gray-400 text-sm mb-4">المعلومات:</h3>
-                    <p id="displayInfo" class="text-xl leading-relaxed text-gray-800 mb-6" dir="auto" style="unicode-bidi: plaintext;"></p>
+                    <p id="displayInfo" class="text-lg sm:text-xl leading-relaxed text-gray-800 mb-6" dir="auto" style="unicode-bidi: plaintext;"></p>
                     
                     <div id="mediaContainer" class="mt-4 border-t pt-4 hidden">
-                        <h4 class="text-sm font-bold text-gray-500 mb-2">المرفقات:</h4>
-                        <div id="mediaContent"></div>
+                        <h4 class="text-sm font-bold text-gray-500 mb-3">المرفقات:</h4>
+                        <div id="mediaContent" class="overflow-x-auto"></div>
                     </div>
                 </div>
             </div>
@@ -266,15 +266,15 @@
                 } else if (fileExt === 'pdf') {
                     // It's a PDF
                     mediaContent.innerHTML = `
-                        <div class="bg-gray-50 p-4 rounded-lg flex items-center justify-between mb-4">
-                            <span class="font-semibold">📄 ملف PDF مرفق</span>
-                            <a href="${filePath}" target="_blank" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition text-sm">فتح الملف</a>
+                        <div class="bg-gray-50 p-3 sm:p-4 rounded-lg flex flex-col sm:flex-row items-center justify-between mb-4 gap-2">
+                            <span class="font-semibold text-sm sm:text-base">📄 ملف PDF مرفق</span>
+                            <a href="${filePath}" target="_blank" class="bg-red-500 text-white px-3 sm:px-4 py-2 rounded hover:bg-red-600 transition text-sm flex-shrink-0">فتح الملف</a>
                         </div>
-                        <iframe src="${filePath}" class="w-full h-[500px] rounded border shadow-md"></iframe>`;
+                        <iframe src="${filePath}" class="w-full h-64 sm:h-96 md:h-[500px] rounded border shadow-md"></iframe>`;
                 } else if (['mp4', 'webm', 'ogg'].includes(fileExt)) {
                     // It's a video
                     mediaContent.innerHTML = `
-                        <video controls class="max-w-full h-auto rounded-lg shadow-md" style="max-height: 500px;">
+                        <video controls class="max-w-full h-auto rounded-lg shadow-md" style="max-height: 400px;">
                             <source src="${filePath}" type="video/${fileExt === 'ogg' ? 'ogg' : fileExt}">
                             متصفحك لا يدعم عنصر الفيديو
                         </video>`;
@@ -292,8 +292,8 @@
                     // For other file types, just show a download link
                     mediaContent.innerHTML = `
                         <div class="bg-gray-100 p-4 rounded-lg text-center">
-                            <p class="mb-3 text-gray-700">📎 ملف مرفق: <strong>${mediaFile}</strong></p>
-                            <a href="${filePath}" target="_blank" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition inline-block">تحميل الملف</a>
+                            <p class="mb-3 text-gray-700 text-sm break-all">📎 ملف مرفق:<br><strong>${mediaFile}</strong></p>
+                            <a href="${filePath}" target="_blank" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition inline-block text-sm">تحميل الملف</a>
                         </div>`;
                 }
             }
