@@ -345,11 +345,10 @@
                     if (fileId) {
                         const embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
                         mediaContent.innerHTML = `
-                            <div class="bg-gray-50 p-3 sm:p-4 rounded-lg flex flex-col sm:flex-row items-center justify-between mb-4 gap-2">
-                                <span class="font-semibold text-sm sm:text-base">📄 ملف PDF من Google Drive</span>
-                                <a href="${mediaFile}" target="_blank" class="bg-red-500 text-white px-3 sm:px-4 py-2 rounded hover:bg-red-600 transition text-sm flex-shrink-0">فتح الملف</a>
-                            </div>
-                            <iframe src="${embedUrl}" class="w-full h-64 sm:h-96 md:h-[500px] rounded border shadow-md" allowfullscreen loading="lazy"></iframe>`;
+                            <iframe src="${embedUrl}" class="w-full h-64 sm:h-96 md:h-[500px] rounded border shadow-md" allowfullscreen loading="lazy"></iframe>
+                            <div class="flex justify-center mt-4">
+                                <a href="${mediaFile}" target="_blank" class="bg-red-500 text-white px-4 sm:px-6 py-2 rounded hover:bg-red-600 transition text-sm">فتح الملف</a>
+                            </div>`;
                     }
                     return;
                 }
@@ -363,11 +362,10 @@
                 } else if (fileExt === 'pdf') {
                     // It's a local PDF
                     mediaContent.innerHTML = `
-                        <div class="bg-gray-50 p-3 sm:p-4 rounded-lg flex flex-col sm:flex-row items-center justify-between mb-4 gap-2">
-                            <span class="font-semibold text-sm sm:text-base">📄 ملف PDF مرفق</span>
-                            <a href="${filePath}" target="_blank" class="bg-red-500 text-white px-3 sm:px-4 py-2 rounded hover:bg-red-600 transition text-sm flex-shrink-0">فتح الملف</a>
-                        </div>
-                        <iframe src="${filePath}" class="w-full h-64 sm:h-96 md:h-[500px] rounded border shadow-md" allowfullscreen loading="lazy"></iframe>`;
+                        <iframe src="${filePath}" class="w-full h-64 sm:h-96 md:h-[500px] rounded border shadow-md" allowfullscreen loading="lazy"></iframe>
+                        <div class="flex justify-center mt-4">
+                            <a href="${filePath}" target="_blank" class="bg-red-500 text-white px-4 sm:px-6 py-2 rounded hover:bg-red-600 transition text-sm">فتح الملف</a>
+                        </div>`;
                 } else if (['mp4', 'webm', 'ogg'].includes(fileExt)) {
                     // It's a video
                     mediaContent.innerHTML = `
