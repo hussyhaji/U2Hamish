@@ -32,6 +32,11 @@
         
         <!-- Desktop Page Sidebar -->
         <aside id="pageSidebar" class="hidden md:flex flex-col w-20 sm:w-24 bg-gray-100 border-l overflow-y-auto sidebar-scroll p-2 text-center">
+            <input 
+                type="text" 
+                id="pageSearchInput" 
+                placeholder="ابحث الصفحة" 
+                class="border rounded-lg px-2 py-1.5 text-xs mb-3 focus:ring-2 focus:ring-blue-500 outline-none">
             <h2 class="text-xs font-bold text-gray-500 mb-4">الصفحة</h2>
             <div id="pageList" class="space-y-2"></div>
         </aside>
@@ -41,7 +46,7 @@
             <div id="selectedPageLabel" class="hidden sticky top-0 bg-blue-500 text-white px-4 py-3 rounded mb-3 text-base font-bold text-center z-10">
                 الصفحة: <span id="selectedPageNumber"></span>
             </div>
-            <h2 class="sticky top-14 z-10 bg-white text-base font-bold text-red-600 mb-2 py-2 text-center">الكلمات</h2>
+            <h2 class="sticky top-14 z-10 bg-white text-base font-bold text-green-600 mb-2 py-2 text-center">الكلمات</h2>
             <div id="wordList" class="space-y-1"></div>
         </aside>
 
@@ -50,6 +55,11 @@
             
             <!-- Mobile Pages Selection -->
             <div id="mobilePagesBox" class="md:hidden mb-4 bg-white border rounded-lg p-4">
+                <input 
+                    type="text" 
+                    id="mobilePageSearchInput" 
+                    placeholder="ابحث عن صفحة #" 
+                    class="border rounded-lg px-3 py-2 w-full mb-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                 <h3 class="text-sm font-bold text-gray-700 mb-3">اختر صفحة</h3>
                 <div id="mobilePageList" class="grid grid-cols-4 gap-2 max-h-32 overflow-y-auto">
                     <p class="col-span-4 text-xs text-gray-400">جاري التحميل...</p>
@@ -61,7 +71,7 @@
                 <div id="mobileSelectedPageLabel" class="hidden sticky top-0 bg-blue-500 text-white px-4 py-3 rounded mb-3 text-lg font-bold text-center z-10">
                     الصفحة: <span id="mobileSelectedPageNumber"></span>
                 </div>
-                <h3 class="sticky top-16 z-10 bg-white text-lg font-bold text-red-600 mb-2 py-2 text-center">الكلمات</h3>
+                <h3 class="sticky top-16 z-10 bg-white text-lg font-bold text-green-600 mb-2 py-2 text-center">الكلمات</h3>
                 <div id="mobileWordList" class="space-y-2 max-h-64 overflow-y-auto">
                     <p class="text-xs text-gray-400">اختر صفحة أولاً</p>
                 </div>
@@ -123,6 +133,8 @@
         // =============================================
         menuToggle.addEventListener('click', toggleMobileMenu);
         searchInput.addEventListener('input', handleSearch);
+        document.getElementById('pageSearchInput').addEventListener('input', handlePageSearch);
+        document.getElementById('mobilePageSearchInput').addEventListener('input', handlePageSearch);
 
         // Load CSV Data
         Papa.parse("data.csv", {
@@ -209,7 +221,7 @@
                 button.addEventListener('click', function() {
                     const index = this.dataset.index;
                     const item = fullData[index];
-                    showDetails(item.Word, item.Page, item.Information, item.Media);
+                    showDetails(item.Word, item.Page, item.Information, item.media);
                 });
             });
             
@@ -248,21 +260,73 @@
                 const fileExt = mediaFile.split('.').pop().toLowerCase();
                 const filePath = `assets/${mediaFile}`;
 
-                if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExt)) {
+                if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExt)) {
                     // It's an image
                     mediaContent.innerHTML = `<img src="${filePath}" class="max-w-full h-auto rounded-lg shadow-md" alt="${word}">`;
                 } else if (fileExt === 'pdf') {
                     // It's a PDF
                     mediaContent.innerHTML = `
-                        <div class="bg-gray-50 p-4 rounded-lg flex items-center justify-between">
-                            <span>ملف PDF مرفق</span>
-                            <a href="${filePath}" target="_blank" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">فتح الملف</a>
+                        <div class="bg-gray-50 p-4 rounded-lg flex items-center justify-between mb-4">
+                            <span class="font-semibold">📄 ملف PDF مرفق</span>
+                            <a href="${filePath}" target="_blank" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition text-sm">فتح الملف</a>
                         </div>
-                        <iframe src="${filePath}" class="w-full h-[500px] mt-4 rounded border"></iframe>`;
+                        <iframe src="${filePath}" class="w-full h-[500px] rounded border shadow-md"></iframe>`;
+                } else if (['mp4', 'webm', 'ogg'].includes(fileExt)) {
+                    // It's a video
+                    mediaContent.innerHTML = `
+                        <video controls class="max-w-full h-auto rounded-lg shadow-md" style="max-height: 500px;">
+                            <source src="${filePath}" type="video/${fileExt === 'ogg' ? 'ogg' : fileExt}">
+                            متصفحك لا يدعم عنصر الفيديو
+                        </video>`;
+                } else if (['mp3', 'wav', 'ogg'].includes(fileExt)) {
+                    // It's an audio file
+                    mediaContent.innerHTML = `
+                        <div class="bg-gray-100 p-4 rounded-lg">
+                            <audio controls class="w-full mb-2">
+                                <source src="${filePath}" type="audio/${fileExt === 'ogg' ? 'ogg' : fileExt}">
+                                متصفحك لا يدعم عنصر الصوت
+                            </audio>
+                            <a href="${filePath}" target="_blank" class="block text-center bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition text-sm mt-2">تحميل الملف</a>
+                        </div>`;
+                } else {
+                    // For other file types, just show a download link
+                    mediaContent.innerHTML = `
+                        <div class="bg-gray-100 p-4 rounded-lg text-center">
+                            <p class="mb-3 text-gray-700">📎 ملف مرفق: <strong>${mediaFile}</strong></p>
+                            <a href="${filePath}" target="_blank" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition inline-block">تحميل الملف</a>
+                        </div>`;
                 }
             }
             
             closeMobileMenu();
+        }
+
+        // =============================================
+        // Page Search Function
+        // =============================================
+        function handlePageSearch(e) {
+            const searchTerm = e.target.value.trim();
+            const pages = [...new Set(fullData.map(item => item.Page))].sort((a, b) => a - b);
+            
+            let filteredPages = pages;
+            if(searchTerm !== "") {
+                filteredPages = pages.filter(p => p.toString().includes(searchTerm));
+            }
+            
+            const pageHTML = filteredPages.map(p => `
+                <button onclick="filterWordsByPage('${p}')" class="w-full py-2 rounded hover:bg-blue-500 hover:text-white transition bg-white border text-xs sm:text-sm">
+                    ${p}
+                </button>
+            `).join('');
+            
+            const mobilePageHTML = filteredPages.map(p => `
+                <button onclick="filterWordsByPage('${p}')" class="py-2 px-2 rounded hover:bg-blue-500 hover:text-white transition bg-blue-50 border text-xs font-semibold text-center">
+                    ${p}
+                </button>
+            `).join('');
+            
+            pageList.innerHTML = pageHTML || '<p class="text-xs text-gray-400 col-span-4">لا توجد صفحات</p>';
+            mobilePageList.innerHTML = mobilePageHTML || '<p class="col-span-4 text-xs text-gray-400">لا توجد صفحات</p>';
         }
 
         // =============================================
@@ -285,7 +349,21 @@
             }
             
             const normalizedTerm = removeDiacritics(term);
-            const results = fullData.filter(item => removeDiacritics(item.Word).includes(normalizedTerm));
+            const results = fullData.filter(item => removeDiacritics(item.Word).toLowerCase().includes(normalizedTerm));
+            
+            console.log('Search term:', term, 'Results:', results.length);
+            
+            // Check if no results found
+            if(results.length === 0) {
+                const noResultsMessage = '<div class="w-full text-center py-12 mt-8"><p class="text-red-600 font-bold text-base">لا توجد الكلمة</p></div>';
+                wordList.innerHTML = noResultsMessage;
+                mobileWordList.innerHTML = noResultsMessage;
+                selectedPageLabel.classList.add('hidden');
+                mobileSelectedPageLabel.classList.add('hidden');
+                pageList.innerHTML = ''; // Clear page list
+                mobilePageList.innerHTML = '';
+                return;
+            }
             
             const searchHTML = results.map(w => {
                 const index = fullData.indexOf(w);
@@ -306,7 +384,7 @@
                 button.addEventListener('click', function() {
                     const index = this.dataset.index;
                     const item = fullData[index];
-                    showDetails(item.Word, item.Page, item.Information, item.Media);
+                    showDetails(item.Word, item.Page, item.Information, item.media);
                 });
             });
         }
