@@ -257,6 +257,22 @@
 
             if (mediaFile && mediaFile.trim() !== "" && mediaFile !== "undefined") {
                 mediaContainer.classList.remove('hidden');
+                
+                // Check if it's a Google Drive link
+                if (mediaFile.includes('drive.google.com')) {
+                    const fileId = mediaFile.match(/\/d\/([a-zA-Z0-9-_]+)/)?.[1];
+                    if (fileId) {
+                        const embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+                        mediaContent.innerHTML = `
+                            <div class="bg-gray-50 p-3 sm:p-4 rounded-lg flex flex-col sm:flex-row items-center justify-between mb-4 gap-2">
+                                <span class="font-semibold text-sm sm:text-base">📄 ملف PDF من Google Drive</span>
+                                <a href="${mediaFile}" target="_blank" class="bg-red-500 text-white px-3 sm:px-4 py-2 rounded hover:bg-red-600 transition text-sm flex-shrink-0">فتح الملف</a>
+                            </div>
+                            <iframe src="${embedUrl}" class="w-full h-64 sm:h-96 md:h-[500px] rounded border shadow-md" allowfullscreen loading="lazy"></iframe>`;
+                    }
+                    return;
+                }
+                
                 const fileExt = mediaFile.split('.').pop().toLowerCase();
                 const filePath = `assets/${mediaFile}`;
 
@@ -264,13 +280,13 @@
                     // It's an image
                     mediaContent.innerHTML = `<img src="${filePath}" class="max-w-full h-auto rounded-lg shadow-md" alt="${word}">`;
                 } else if (fileExt === 'pdf') {
-                    // It's a PDF
+                    // It's a local PDF
                     mediaContent.innerHTML = `
                         <div class="bg-gray-50 p-3 sm:p-4 rounded-lg flex flex-col sm:flex-row items-center justify-between mb-4 gap-2">
                             <span class="font-semibold text-sm sm:text-base">📄 ملف PDF مرفق</span>
                             <a href="${filePath}" target="_blank" class="bg-red-500 text-white px-3 sm:px-4 py-2 rounded hover:bg-red-600 transition text-sm flex-shrink-0">فتح الملف</a>
                         </div>
-                        <iframe src="${filePath}" class="w-full h-64 sm:h-96 md:h-[500px] rounded border shadow-md"></iframe>`;
+                        <iframe src="${filePath}" class="w-full h-64 sm:h-96 md:h-[500px] rounded border shadow-md" allowfullscreen loading="lazy"></iframe>`;
                 } else if (['mp4', 'webm', 'ogg'].includes(fileExt)) {
                     // It's a video
                     mediaContent.innerHTML = `
