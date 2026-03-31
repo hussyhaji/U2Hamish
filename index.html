@@ -7,12 +7,26 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        :root {
+            --page-sidebar-width: 120px;
+            --word-sidebar-width: 200px;
+        }
+        
+        #pageSidebar {
+            width: var(--page-sidebar-width) !important;
+        }
+        
+        #wordSidebar {
+            width: var(--word-sidebar-width) !important;
+        }
+    </style>
 </head>
 <body class="bg-gray-50 h-screen flex flex-col">
 
     <!-- Header -->
     <header class="bg-white border-b p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div class="flex items-center gap-3 w-full sm:w-auto">
+        <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
             <button id="menuToggle" class="md:hidden p-2 hover:bg-gray-100 rounded-lg" aria-label="Toggle menu">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
@@ -20,29 +34,36 @@
             </button>
             <h1 class="text-lg sm:text-xl font-bold text-blue-800 flex-1 sm:flex-none">هوامش كتاب عيون الاخبار - الجزء الثاني</h1>
         </div>
-        <input 
-            type="text" 
-            id="searchInput" 
-            placeholder="ابحث عن كلمة..." 
-            class="border rounded-lg px-3 sm:px-4 py-2 w-full sm:w-96 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+        <div class="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+            <input 
+                type="text" 
+                id="searchInput" 
+                placeholder="ابحث عن كلمة..." 
+                class="border rounded-lg px-3 sm:px-4 py-2 flex-1 sm:flex-none sm:w-96 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            <div class="hidden md:flex items-center gap-1">
+                <button id="decreaseWidth" class="p-2 hover:bg-gray-100 rounded-lg text-sm" title="تقليل العرض">−</button>
+                <button id="resetWidth" class="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded" title="إعادة تعيين">إعادة</button>
+                <button id="increaseWidth" class="p-2 hover:bg-gray-100 rounded-lg text-sm" title="زيادة العرض">+</button>
+            </div>
+        </div>
     </header>
 
     <!-- Main Container -->
     <div class="flex flex-1 overflow-hidden">
         
         <!-- Desktop Page Sidebar -->
-        <aside id="pageSidebar" class="hidden md:flex flex-col w-20 sm:w-24 bg-gray-100 border-l overflow-y-auto sidebar-scroll p-2 text-center">
+        <aside id="pageSidebar" class="hidden md:flex flex-col bg-gray-100 border-l overflow-y-auto sidebar-scroll p-2 text-center">
             <input 
                 type="text" 
                 id="pageSearchInput" 
-                placeholder="ابحث الصفحة" 
+                placeholder="بحث #" 
                 class="border rounded-lg px-2 py-1.5 text-xs mb-3 focus:ring-2 focus:ring-blue-500 outline-none">
             <h2 class="text-xs font-bold text-gray-500 mb-4">الصفحة</h2>
             <div id="pageList" class="space-y-2"></div>
         </aside>
 
         <!-- Desktop Words Sidebar -->
-        <aside id="wordSidebar" class="hidden md:flex flex-col w-40 sm:w-48 bg-white border-l overflow-y-auto sidebar-scroll p-2">
+        <aside id="wordSidebar" class="hidden md:flex flex-col bg-white border-l overflow-y-auto sidebar-scroll p-2">
             <div id="selectedPageLabel" class="hidden sticky top-0 bg-blue-500 text-white px-4 py-3 rounded mb-3 text-base font-bold text-center z-10">
                 الصفحة: <span id="selectedPageNumber"></span>
             </div>
@@ -105,6 +126,58 @@
 
     <script>
         // =============================================
+        // Width Adjustment System
+        // =============================================
+        const DEFAULT_PAGE_WIDTH = 120;
+        const DEFAULT_WORD_WIDTH = 200;
+        const WIDTH_STEP = 20;
+        const MAX_SIDEBAR_WIDTH = 400;
+        const MIN_SIDEBAR_WIDTH = 80;
+        
+        function loadWidths() {
+            const savedPageWidth = localStorage.getItem('pageWidth');
+            const savedWordWidth = localStorage.getItem('wordWidth');
+            
+            if (savedPageWidth) {
+                document.documentElement.style.setProperty('--page-sidebar-width', savedPageWidth + 'px');
+            }
+            if (savedWordWidth) {
+                document.documentElement.style.setProperty('--word-sidebar-width', savedWordWidth + 'px');
+            }
+        }
+        
+        function saveWidths() {
+            const pageWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--page-sidebar-width'));
+            const wordWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--word-sidebar-width'));
+            localStorage.setItem('pageWidth', pageWidth);
+            localStorage.setItem('wordWidth', wordWidth);
+        }
+        
+        function adjustWidths(delta) {
+            const root = document.documentElement;
+            const currentPageWidth = parseInt(getComputedStyle(root).getPropertyValue('--page-sidebar-width'));
+            const currentWordWidth = parseInt(getComputedStyle(root).getPropertyValue('--word-sidebar-width'));
+            
+            const newPageWidth = Math.min(Math.max(currentPageWidth + delta, MIN_SIDEBAR_WIDTH), MAX_SIDEBAR_WIDTH);
+            const newWordWidth = Math.min(Math.max(currentWordWidth + (delta * 1.5), MIN_SIDEBAR_WIDTH), MAX_SIDEBAR_WIDTH);
+            
+            root.style.setProperty('--page-sidebar-width', newPageWidth + 'px');
+            root.style.setProperty('--word-sidebar-width', newWordWidth + 'px');
+            
+            saveWidths();
+        }
+        
+        function resetWidths() {
+            document.documentElement.style.setProperty('--page-sidebar-width', DEFAULT_PAGE_WIDTH + 'px');
+            document.documentElement.style.setProperty('--word-sidebar-width', DEFAULT_WORD_WIDTH + 'px');
+            localStorage.removeItem('pageWidth');
+            localStorage.removeItem('wordWidth');
+        }
+        
+        // Load widths on page load
+        loadWidths();
+        
+        // =============================================
         // State Management
         // =============================================
         let fullData = [];
@@ -135,6 +208,11 @@
         searchInput.addEventListener('input', handleSearch);
         document.getElementById('pageSearchInput').addEventListener('input', handlePageSearch);
         document.getElementById('mobilePageSearchInput').addEventListener('input', handlePageSearch);
+        
+        // Width adjustment buttons
+        document.getElementById('decreaseWidth').addEventListener('click', () => adjustWidths(-WIDTH_STEP));
+        document.getElementById('increaseWidth').addEventListener('click', () => adjustWidths(WIDTH_STEP));
+        document.getElementById('resetWidth').addEventListener('click', resetWidths);
 
         // Load CSV Data
         Papa.parse("data.csv", {
@@ -206,9 +284,12 @@
         function displayWords(words, pageNum = null) {
             const wordHTML = words.map(w => {
                 const index = fullData.indexOf(w);
+                const hasMedia = w.media && w.media.trim() !== "";
+                const mediaIcon = hasMedia ? ' <span class="text-blue-500 ml-1">📎</span>' : '';
+                const wordColor = hasMedia ? 'text-blue-600 font-semibold' : '';
                 return `
                     <button class="word-button w-full text-right px-2 sm:px-3 py-2 rounded hover:bg-gray-100 text-xs sm:text-sm border-b border-gray-50" data-index="${index}">
-                        ${w.Word} <span class="text-[8px] text-gray-400">[س ${w.Line}]</span>
+                        <span class="${wordColor}">${w.Word}${mediaIcon}</span> <span class="text-[8px] text-gray-400">[س ${w.Line}]</span>
                     </button>
                 `;
             }).join('');
@@ -383,9 +464,12 @@
             
             const searchHTML = results.map(w => {
                 const index = fullData.indexOf(w);
+                const hasMedia = w.media && w.media.trim() !== "";
+                const mediaIcon = hasMedia ? ' <span class="text-blue-500 ml-1">📎</span>' : '';
+                const wordColor = hasMedia ? 'text-blue-600 font-semibold' : '';
                 return `
                     <button class="word-button w-full text-right px-2 sm:px-3 py-2 rounded hover:bg-gray-100 text-xs sm:text-sm border-b border-gray-50" data-index="${index}">
-                        ${w.Word} <span class="text-[8px] text-gray-400">[س ${w.Line}]</span>
+                        <span class="${wordColor}">${w.Word}${mediaIcon}</span> <span class="text-[8px] text-gray-400">[س ${w.Line}]</span>
                     </button>
                 `;
             }).join('');
