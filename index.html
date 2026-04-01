@@ -284,14 +284,16 @@
         function displayWords(words, pageNum = null) {
             const wordHTML = words.map(w => {
                 const index = fullData.indexOf(w);
-                const hasMedia = w.media && w.media.trim() !== "";
-                const mediaIcon = hasMedia ? ' <span class="text-blue-500 ml-1">📎</span>' : '';
-                const wordColor = hasMedia ? 'text-blue-600 font-semibold' : '';
-                return `
-                    <button class="word-button w-full text-right px-2 sm:px-3 py-2 rounded hover:bg-gray-100 text-xs sm:text-sm border-b border-gray-50" data-index="${index}">
-                        <span class="${wordColor}">${w.Word}${mediaIcon}</span> <span class="text-[8px] text-gray-400">[س ${w.Line}]</span>
-                    </button>
-                `;
+                // Change "Bookmarks" to the exact name of your 6th column
+const hasLook = w.unzur && w.unzur.includes("انظر");
+const lookIcon = hasLook ? '<span class="text-red-600 mr-1">📎</span> ' : '';
+const wordStyle = hasLook ? 'text-red-600 font-bold' : '';
+
+return `
+    <button class="word-button w-full text-right px-2 sm:px-3 py-2 rounded hover:bg-gray-100 text-xs sm:text-sm border-b border-gray-50" data-index="${index}">
+        <span class="${wordStyle}">${lookIcon}${w.Word}</span> <span class="text-[8px] text-gray-400">[س ${w.Line}]</span>
+    </button>
+`;
             }).join('');
             
             wordList.innerHTML = wordHTML;
@@ -462,14 +464,16 @@
             
             const searchHTML = results.map(w => {
                 const index = fullData.indexOf(w);
-                const hasMedia = w.media && w.media.trim() !== "";
-                const mediaIcon = hasMedia ? ' <span class="text-blue-500 ml-1">📎</span>' : '';
-                const wordColor = hasMedia ? 'text-blue-600 font-semibold' : '';
-                return `
-                    <button class="word-button w-full text-right px-2 sm:px-3 py-2 rounded hover:bg-gray-100 text-xs sm:text-sm border-b border-gray-50" data-index="${index}">
-                        <span class="${wordColor}">${w.Word}${mediaIcon}</span> <span class="text-[8px] text-gray-400">[س ${w.Line}]</span>
-                    </button>
-                `;
+                // Check if the bookmarks column contains "انظر"
+const hasLook = w.unzur && w.unzur.includes("انظر");
+const lookIcon = hasLook ? '<span class="text-red-600 mr-1">📎</span> ' : '';
+const wordStyle = hasLook ? 'text-red-600 font-bold' : '';
+
+return `
+    <button class="word-button w-full text-right px-2 sm:px-3 py-2 rounded hover:bg-gray-100 text-xs sm:text-sm border-b border-gray-50" data-index="${index}">
+        <span class="${wordStyle}">${lookIcon}${w.Word}</span> <span class="text-[8px] text-gray-400">[س ${w.Line}]</span>
+    </button>
+`;
             }).join('');
             
             wordList.innerHTML = searchHTML;
