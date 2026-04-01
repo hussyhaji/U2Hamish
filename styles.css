@@ -15,3 +15,16 @@ body {
     background: #cbd5e1;
     border-radius: 10px;
 }
+/* Custom spacing for the book information display */
+#displayInfo {
+    line-height: 2.0; /* Increase this number for more space, e.g., 2.2 or 2.5 */
+    margin-bottom: 1.5rem;
+    white-space: pre-wrap; /* Ensures line breaks in your data are respected */
+}
+
+/* Optional: Add spacing to the horizontal lines (***) you process in JS */
+#displayInfo hr {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    border-color: #e5e7eb; /* Light gray color */
+}
