@@ -67,7 +67,7 @@
             <div id="selectedPageLabel" class="hidden sticky top-0 bg-blue-500 text-white px-4 py-3 rounded mb-3 text-base font-bold text-center z-10">
                 الصفحة: <span id="selectedPageNumber"></span>
             </div>
-            <h2 class="sticky top-14 z-10 bg-white text-base font-bold text-green-600 mb-2 py-2 text-center">الكلمات</h2>
+            <h2 id="wordsHeader" class="sticky top-14 z-10 bg-white text-base font-bold text-green-600 mb-2 py-2 text-center">الكلمات</h2>
             <div id="wordList" class="space-y-1"></div>
         </aside>
 
@@ -92,7 +92,7 @@
                 <div id="mobileSelectedPageLabel" class="hidden sticky top-0 bg-blue-500 text-white px-4 py-3 rounded mb-3 text-lg font-bold text-center z-10">
                     الصفحة: <span id="mobileSelectedPageNumber"></span>
                 </div>
-                <h3 class="sticky top-16 z-10 bg-white text-lg font-bold text-green-600 mb-2 py-2 text-center">الكلمات</h3>
+                <h3 id="mobileWordsHeader" class="sticky top-16 z-10 bg-white text-lg font-bold text-green-600 mb-2 py-2 text-center">الكلمات</h3>
                 <div id="mobileWordList" class="space-y-2 max-h-64 overflow-y-auto">
                     <p class="text-xs text-gray-400">اختر صفحة أولاً</p>
                 </div>
@@ -434,62 +434,79 @@ return `
         }
 
         function handleSearch(e) {
-            const term = e.target.value.toLowerCase();
-            
-            if(term === "") {
-                renderPageSidebar(fullData);
-                wordList.innerHTML = "";
-                mobileWordList.innerHTML = "<p class=\"text-xs text-gray-400\">اختر صفحة أولاً</p>";
-                selectedPageLabel.classList.add('hidden');
-                mobileSelectedPageLabel.classList.add('hidden');
-                return;
-            }
-            
-            const normalizedTerm = removeDiacritics(term);
-            const results = fullData.filter(item => removeDiacritics(item.Word).toLowerCase().includes(normalizedTerm));
-            
-            console.log('Search term:', term, 'Results:', results.length);
-            
-            // Check if no results found
-            if(results.length === 0) {
-                const noResultsMessage = '<div class="w-full text-center py-12 mt-8"><p class="text-red-600 font-bold text-base">لا توجد الكلمة</p></div>';
-                wordList.innerHTML = noResultsMessage;
-                mobileWordList.innerHTML = noResultsMessage;
-                selectedPageLabel.classList.add('hidden');
-                mobileSelectedPageLabel.classList.add('hidden');
-                pageList.innerHTML = ''; // Clear page list
-                mobilePageList.innerHTML = '';
-                return;
-            }
-            
-            const searchHTML = results.map(w => {
-                const index = fullData.indexOf(w);
-                // Check if the bookmarks column contains "انظر"
-const hasLook = w.unzur && w.unzur.includes("انظر");
-const lookIcon = hasLook ? '<span class="text-red-600 mr-1">📎</span> ' : '';
-const wordStyle = hasLook ? 'text-red-600 font-bold' : '';
+    const term = e.target.value.toLowerCase();
+    // Get the label elements
+    const wordsHeader = document.getElementById('wordsHeader');
+    const mobileWordsHeader = document.getElementById('mobileWordsHeader');
+    
+    if(term === "") {
+        // 1. Show the labels again when search is cleared
+        if(wordsHeader) wordsHeader.classList.remove('hidden');
+        if(mobileWordsHeader) mobileWordsHeader.classList.remove('hidden');
 
-return `
-    <button class="word-button w-full text-right px-2 sm:px-3 py-2 rounded hover:bg-gray-100 text-xs sm:text-sm border-b border-gray-50" data-index="${index}">
-        <span class="${wordStyle}">${lookIcon}${w.Word}</span> <span class="text-[8px] text-gray-400">[س ${w.Line}]</span>
-    </button>
-`;
-            }).join('');
-            
-            wordList.innerHTML = searchHTML;
-            mobileWordList.innerHTML = searchHTML;
-            selectedPageLabel.classList.add('hidden');
-            mobileSelectedPageLabel.classList.add('hidden');
-            
-            // Add event listeners to search result buttons
-            document.querySelectorAll('.word-button').forEach(button => {
-                button.addEventListener('click', function() {
-                    const index = this.dataset.index;
-                    const item = fullData[index];
-                    showDetails(item.Word, item.Page, item.Information, item.media);
-                });
-            });
-        }
+        renderPageSidebar(fullData);
+        wordList.innerHTML = "";
+        mobileWordList.innerHTML = "<p class=\"text-xs text-gray-400\">اختر صفحة أولاً</p>";
+        wordSidebar.scrollTop = 0; 
+        document.getElementById('mobileWordList').parentElement.scrollTop = 0;
+        selectedPageLabel.classList.add('hidden');
+        mobileSelectedPageLabel.classList.add('hidden');
+        return;
+    }
+    
+    // 2. Hide the labels whenever a search happens
+    if(wordsHeader) wordsHeader.classList.add('hidden');
+    if(mobileWordsHeader) mobileWordsHeader.classList.add('hidden');
+
+    const normalizedTerm = removeDiacritics(term);
+    const results = fullData.filter(item => removeDiacritics(item.Word).toLowerCase().includes(normalizedTerm));
+    
+    console.log('Search term:', term, 'Results:', results.length);
+    
+    if(results.length === 0) {
+        const noResultsMessage = '<div class="w-full text-center py-12 mt-8"><p class="text-red-600 font-bold text-base">لا توجد الكلمة</p></div>';
+        wordList.innerHTML = noResultsMessage;
+        mobileWordList.innerHTML = noResultsMessage;
+        selectedPageLabel.classList.add('hidden');
+        mobileSelectedPageLabel.classList.add('hidden');
+        pageList.innerHTML = ''; 
+        mobilePageList.innerHTML = '';
+        return;
+    }
+    
+    const searchHTML = '<div class="h-2"></div>' + results.map(w => {
+        const index = fullData.indexOf(w);
+        const hasLook = w.unzur && w.unzur.includes("انظر");
+        const lookIcon = hasLook ? '<span class="text-red-600 mr-1">📎</span> ' : '';
+        const wordStyle = hasLook ? 'text-red-600 font-bold' : '';
+
+        return `
+            <button class="word-button w-full text-right px-2 sm:px-3 py-2 rounded hover:bg-gray-100 text-xs sm:text-sm border-b border-gray-50" data-index="${index}">
+                <span class="${wordStyle}">${lookIcon}${w.Word}</span> <span class="text-[8px] text-gray-400">[س ${w.Line}]</span>
+            </button>
+        `;
+    }).join('');
+
+    wordList.innerHTML = searchHTML;
+    mobileWordList.innerHTML = searchHTML;
+
+    // 3. Re-attach click listeners so the search results work
+    document.querySelectorAll('.word-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const index = this.dataset.index;
+            const item = fullData[index];
+            showDetails(item.Word, item.Page, item.Information, item.media);
+        });
+    });
+
+    // 4. Reset scroll to top
+    wordSidebar.scrollTop = 0;
+    const mobileParent = document.getElementById('mobileWordList').parentElement;
+    if(mobileParent) mobileParent.scrollTop = 0;
+
+    selectedPageLabel.classList.add('hidden');
+    mobileSelectedPageLabel.classList.add('hidden');
+}
     </script>
 </body>
 </html>

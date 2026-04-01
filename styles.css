@@ -28,3 +28,14 @@ body {
     margin-bottom: 2rem;
     border-color: #e5e7eb; /* Light gray color */
 }
+/* Create space at the top of the lists so content isn't hidden by sticky headers */
+#wordList, #mobileWordList {
+    padding-top: 10px; 
+    display: flex;
+    flex-direction: column;
+}
+
+/* Ensure the first button has extra margin when searching */
+.word-button:first-child {
+    margin-top: 5px;
+}
