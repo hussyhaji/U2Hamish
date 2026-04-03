@@ -127,9 +127,12 @@ header {
 
 /* "Words" Column Header */
 #wordsHeader, #mobileWordsHeader {
-    color: #059669; /* emerald-600 */
-    background-color: white;
-    border-bottom: 2px solid #ecfdf5;
+    color: #e56b6f;
+    font-weight: bold; /* emerald-600 */
+    background-color: #fff1e6;
+    border-color: #fad2e1;
+    border-width: 1px;
+    border-radius: 8px;
 }
 
 .meta-badge-page { background-color: #dbeafe; color: #1e40af; }
@@ -148,7 +151,7 @@ header {
 #displayInfo hr {
     margin: 2rem 0;
     border: 0;
-    border-top: 2px solid var(--border-light);
+    border-top: 2px solid #9096a1;
 }
 
 .details-label {
@@ -158,7 +161,7 @@ header {
 }
 
 #welcomeMessage {
-    color: #175cd3;
+    color: #555252;
     margin-top: 5rem;
 }
 
