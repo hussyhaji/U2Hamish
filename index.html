@@ -73,14 +73,7 @@
 
         <!-- Main Content Area -->
         <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-            <div class="flex justify-between items-center mb-4 border-b pb-4">
-    <button id="prevWord" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
-        <span>→</span> السابق
-    </button>
-    <button id="nextWord" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
-        التالي <span>←</span>
-    </button>
-</div>
+            
             <!-- Mobile Pages Selection -->
             <div id="mobilePagesBox" class="md:hidden mb-4 bg-white border rounded-lg p-4">
                 <input 
@@ -112,6 +105,16 @@
 
             <!-- Details Display Area -->
             <div id="detailsArea" class="hidden">
+                <div class="flex justify-between items-center mb-4 border-b pb-4">
+    <button id="prevWord" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+        <span>→</span> السابق
+    </button>
+    <button id="nextWord" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+        التالي <span>←</span>
+    </button>
+</div>
+
+
                 <div class="flex gap-4 mb-6">
                     <div class="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg font-bold">صفحة: <span id="displayPage"></span></div>
                     <div class="bg-green-100 text-green-800 px-4 py-2 rounded-lg font-bold">الكلمة: <span id="displayWord"></span></div>
