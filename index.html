@@ -528,10 +528,11 @@
         const wordStyle = hasLook ? 'text-red-600 font-bold' : '';
 
         return `
-            <button class="word-button w-full text-right px-2 sm:px-3 py-2 rounded hover:bg-gray-100 text-xs sm:text-sm border-b border-gray-50" data-index="${index}">
-                <span class="${wordStyle}">${lookIcon}${w.Word}</span> <span class="text-[8px] text-gray-400">[س ${w.Line}]</span>
-            </button>
-        `;
+    <button class="word-button" data-index="${index}">
+        <span class="${wordStyle}">${lookIcon}${w.Word}</span> 
+        <span>[س ${w.Line}]</span>
+    </button>
+`;
     }).join('');
 
     wordList.innerHTML = searchHTML;
