@@ -1,18 +1,52 @@
 /* =============================================
-   1. Fonts & Global Styles
+   1. Fonts & Global Variables
    ============================================= */
 @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
 
-body {
-    font-family: 'Amiri', serif;
-    background-color: #f9fafb; /* Light gray background */
+:root {
+    --page-sidebar-width: 120px;
+    --word-sidebar-width: 200px;
+  /* --- BUTTON COLOR SETTINGS --- */
+    --page-btn-bg: #ffffff;           /* Default Background (White) */
+    --page-btn-text: #374151;         /* Default Text Color (Gray) */
+    --page-btn-border: #e5e7eb;       /* Default Border Color */
+    
+    --page-btn-hover-bg: #3b82f6;     /* Hover Background (Blue) */
+    --page-btn-hover-text: #ffffff;   /* Hover Text Color (White) */
+    /* ----------------------------- */
 }
 
+body {
+    font-family: 'Amiri', serif;
+    background-color: var(--bg-gray);
+    color: #1f2937;
+}
 
+/* The Requested Header Title Color */
+.main-title {
+    color: #d62828 !important;
+}
+
+header {
+    background-color: white;
+    border-bottom: 1px solid var(--border-light);
+}
 
 /* =============================================
-   2. Scrollbar Styling
+   2. Layout & Sidebars
    ============================================= */
+#pageSidebar {
+    width: var(--page-sidebar-width) !important;
+    background-color: #f3f4f6;
+    border-left: 1px solid var(--border-light);
+}
+
+#wordSidebar {
+    width: var(--word-sidebar-width) !important;
+    background-color: white;
+    border-left: 1px solid var(--border-light);
+}
+
 .sidebar-scroll::-webkit-scrollbar {
     width: 8px;
 }
@@ -22,40 +56,38 @@ body {
     border-radius: 10px;
 }
 
-.sidebar-scroll::-webkit-scrollbar-track {
-    background: transparent;
-}
-
 /* =============================================
-   3. Navigation & Button Styles (Sidebars)
+   3. Buttons & Navigation
    ============================================= */
 
-/* Page Buttons (Far Right Sidebar) */
+/* Page Number Buttons */
 .page-button {
     width: 100%;
     padding: 0.5rem;
     border-radius: 0.375rem;
     transition: all 0.2s ease;
     background-color: white;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border-light);
     font-size: 0.875rem;
     cursor: pointer;
 }
 
 .page-button:hover {
     background-color: #caf0f8;
-    color: #252424;
+    color: #3b82f6;
+    border-color: var(--page-btn-hover-bg);
 }
 
-/* Highlight for the active page number */
+/* Active Highlight for Page */
 .active-page {
-    background-color: #90e0ef !important; /* Solid Orange/Coral */
-    color: #0077b6 !important;
+    background-color: #e2ece9;
+    color: 0096c7 !important;
     font-weight: bold !important;
-    border: 2px solid #00b4d8 !important; /* Yellow border */
+    border: 2px solid;
+    border-color: #bee1e6;
 }
 
-/* Word Buttons (Middle Sidebar) */
+/* Word List Buttons */
 .word-button {
     width: 100%;
     text-align: right;
@@ -66,62 +98,82 @@ body {
 }
 
 .word-button:hover {
-    background-color: #ffe6a7;
+    background-color: #fefae0;
 }
 
-/* Highlight for the active word in the middle list */
+/* Active Highlight for Word */
 .active-word {
-    background-color: #fefae0 !important; /* Warm light yellow */
-    border-right: 5px solid #ee9b00 !important; /* Thick gold line */
+    background-color: #ffe6a7 !important;
+    border-right: 5px solid #FFD166 !important;
     font-weight: bold !important;
 }
 
+/* Navigation Arrows (Details Area) */
+.nav-btn-prev { background-color: #ffc2d1; color: #374151; }
+.nav-btn-next { background-color: #16a34a; color: white; }
+
 /* =============================================
-   4. Content Display Area
+   4. Labels & Headers
    ============================================= */
 
-/* Spacing for the book information display */
+/* Sticky "Page: #" Label */
+#selectedPageLabel, #mobileSelectedPageLabel {
+    background-color: #86bbd8;
+    color: white;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* "Words" Column Header */
+#wordsHeader, #mobileWordsHeader {
+    color: #059669; /* emerald-600 */
+    background-color: white;
+    border-bottom: 2px solid #ecfdf5;
+}
+
+.meta-badge-page { background-color: #dbeafe; color: #1e40af; }
+.meta-badge-word { background-color: #dcfce7; color: #166534; }
+
+/* =============================================
+   5. Content Display (The Book Text)
+   ============================================= */
 #displayInfo {
-    line-height: 2.2; /* Comfortable reading height */
-    margin-bottom: 1.5rem;
-    white-space: pre-wrap; /* Respects line breaks in data */
-    color: #2d2e31;
+    line-height: 2.2;
     font-size: 1.25rem;
+    white-space: pre-wrap;
+    color: #1f2937;
 }
 
-/* Spacing for horizontal lines (***) processed in JS */
 #displayInfo hr {
-    margin-top: 2rem;
-    margin-bottom: 2rem;
+    margin: 2rem 0;
     border: 0;
-    border-top: 2px solid #595858;
+    border-top: 2px solid var(--border-light);
 }
 
-/* Lists Layout */
-#wordList, #mobileWordList {
-    padding-top: 10px; 
-    display: flex;
-    flex-direction: column;
+.details-label {
+    color: #9ca3af; /* gray-400 */
+    font-weight: bold;
+    font-size: 0.875rem;
 }
 
-/* Spacing for search results */
-.word-button:first-child {
-    margin-top: 5px;
+#welcomeMessage {
+    color: #175cd3;
+    margin-top: 5rem;
 }
 
 /* =============================================
-   5. Media & Mobile Adjustments
+   6. Inputs & Search
    ============================================= */
-#mediaContent img, 
-#mediaContent video, 
-#mediaContent iframe {
-    max-width: 100%;
-    border-radius: 0.75rem;
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+.input-field {
+    border: 1px solid var(--border-light);
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    outline: none;
+    transition: ring 0.2s;
 }
 
-@media (max-width: 768px) {
-    .active-page {
-        transform: scale(1.05);
-    }
+.input-field:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
