@@ -39,3 +39,17 @@ body {
 .word-button:first-child {
     margin-top: 5px;
 }
+/* Highlight for the active word in the middle list */
+.active-word {
+    background-color: #dcfce7 !important; /* Very light green */
+    border-right: 4px solid #16a34a !important; /* Thick green line on the right */
+    font-weight: bold !important;
+}
+
+/* Highlight for the active page number in the far right list */
+.active-page {
+    background-color: #16a34a !important; /* Solid Green */
+    color: white !important;              /* White text */
+    font-weight: bold !important;
+    border: 2px solid #15803d !important;
+}
