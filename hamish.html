@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>هوامش كتاب عيون الاخبار - الجزء الثاني</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        :root {
+            --page-sidebar-width: 120px;
+            --word-sidebar-width: 200px;
+        }
+        
+        #pageSidebar {
+            width: var(--page-sidebar-width) !important;
+        }
+        
+        #wordSidebar {
+            width: var(--word-sidebar-width) !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-white border-b p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+            <button id="menuToggle" class="md:hidden p-2 hover:bg-gray-100 rounded-lg" aria-label="Toggle menu">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+            <h1 class="text-lg sm:text-xl font-bold text-blue-800 flex-1 sm:flex-none">هوامش كتاب عيون الاخبار - الجزء الثاني</h1>
+        </div>
+        <div class="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+            <input 
+                type="text" 
+                id="searchInput" 
+                placeholder="ابحث عن كلمة..." 
+                class="border rounded-lg px-3 sm:px-4 py-2 flex-1 sm:flex-none sm:w-96 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            <div class="hidden md:flex items-center gap-1">
+                <button id="decreaseWidth" class="p-2 hover:bg-gray-100 rounded-lg text-sm" title="تقليل العرض">−</button>
+                <button id="resetWidth" class="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded" title="إعادة تعيين">إعادة</button>
+                <button id="increaseWidth" class="p-2 hover:bg-gray-100 rounded-lg text-sm" title="زيادة العرض">+</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- Desktop Page Sidebar -->
+        <aside id="pageSidebar" class="hidden md:flex flex-col bg-gray-100 border-l overflow-y-auto sidebar-scroll p-2 text-center">
+            <input 
+                type="text" 
+                id="pageSearchInput" 
+                placeholder="ابحث عن صفحة" 
+                class="border rounded-lg px-2 py-1.5 text-xs mb-3 focus:ring-2 focus:ring-blue-500 outline-none">
+            <h2 class="text-xs font-bold text-gray-500 mb-4">الصفحة</h2>
+            <div id="pageList" class="space-y-2"></div>
+        </aside>
+
+        <!-- Desktop Words Sidebar -->
+        <aside id="wordSidebar" class="hidden md:flex flex-col bg-white border-l overflow-y-auto sidebar-scroll p-2">
+            <div id="selectedPageLabel" class="hidden sticky top-0 bg-blue-500 text-white px-4 py-3 rounded mb-3 text-base font-bold text-center z-10">
+                الصفحة: <span id="selectedPageNumber"></span>
+            </div>
+            <h2 id="wordsHeader" class="sticky top-14 z-10 bg-white text-base font-bold text-green-600 mb-2 py-2 text-center">الكلمات</h2>
+            <div id="wordList" class="space-y-1"></div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+            
+            <!-- Mobile Pages Selection -->
+            <div id="mobilePagesBox" class="md:hidden mb-4 bg-white border rounded-lg p-4">
+                <input 
+                    type="text" 
+                    id="mobilePageSearchInput" 
+                    placeholder="ابحث عن صفحة #" 
+                    class="border rounded-lg px-3 py-2 w-full mb-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                <h3 class="text-sm font-bold text-gray-700 mb-3">اختر صفحة</h3>
+                <div id="mobilePageList" class="grid grid-cols-4 gap-2 max-h-32 overflow-y-auto">
+                    <p class="col-span-4 text-xs text-gray-400">جاري التحميل...</p>
+                </div>
+            </div>
+
+            <!-- Mobile Words Display -->
+            <div id="mobileWordsBox" class="md:hidden mb-6 bg-white border rounded-lg p-4">
+                <div id="mobileSelectedPageLabel" class="hidden sticky top-0 bg-blue-500 text-white px-4 py-3 rounded mb-3 text-lg font-bold text-center z-10">
+                    الصفحة: <span id="mobileSelectedPageNumber"></span>
+                </div>
+                <h3 id="mobileWordsHeader" class="sticky top-16 z-10 bg-white text-lg font-bold text-green-600 mb-2 py-2 text-center">الكلمات</h3>
+                <div id="mobileWordList" class="space-y-2 max-h-64 overflow-y-auto">
+                    <p class="text-xs text-gray-400">اختر صفحة أولاً</p>
+                </div>
+            </div>
+
+            <!-- Welcome Message -->
+            <div id="welcomeMessage" class="text-center mt-10 sm:mt-20 text-gray-400 italic text-sm sm:text-base">
+                الرجاء اختيار صفحة أو كلمة لعرض التفاصيل
+            </div>
+
+            <!-- Details Display Area -->
+            <div id="detailsArea" class="hidden">
+                <div class="flex justify-between items-center mb-4 border-b pb-4">
+    <button id="prevWord" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+        <span>→</span> السابق
+    </button>
+    <button id="nextWord" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+        التالي <span>←</span>
+    </button>
+</div>
+
+
+                <div class="flex gap-4 mb-6">
+                    <div class="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg font-bold">صفحة: <span id="displayPage"></span></div>
+                    <div class="bg-green-100 text-green-800 px-4 py-2 rounded-lg font-bold">الكلمة: <span id="displayWord"></span></div>
+                </div>
+                
+                <div class="bg-white border shadow-sm rounded-xl p-4 sm:p-8 min-h-[400px]">
+                    <h3 class="text-gray-400 text-sm mb-4"></h3>
+                    <p id="displayInfo" class="text-lg sm:text-xl text-gray-800" dir="auto" style="unicode-bidi: plaintext;"></p>
+                    
+                    <div id="mediaContainer" class="mt-4 border-t pt-4 hidden">
+                        <h4 class="text-sm font-bold text-gray-500 mb-3">المرفقات:</h4>
+                        <div id="mediaContent" class="overflow-x-auto"></div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // =============================================
+        // Width Adjustment System
+        // =============================================
+        const DEFAULT_PAGE_WIDTH = 120;
+        const DEFAULT_WORD_WIDTH = 200;
+        const WIDTH_STEP = 20;
+        const MAX_SIDEBAR_WIDTH = 400;
+        const MIN_SIDEBAR_WIDTH = 80;
+        
+        function loadWidths() {
+            const savedPageWidth = localStorage.getItem('pageWidth');
+            const savedWordWidth = localStorage.getItem('wordWidth');
+            
+            if (savedPageWidth) {
+                document.documentElement.style.setProperty('--page-sidebar-width', savedPageWidth + 'px');
+            }
+            if (savedWordWidth) {
+                document.documentElement.style.setProperty('--word-sidebar-width', savedWordWidth + 'px');
+            }
+        }
+        
+        function saveWidths() {
+            const pageWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--page-sidebar-width'));
+            const wordWidth = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--word-sidebar-width'));
+            localStorage.setItem('pageWidth', pageWidth);
+            localStorage.setItem('wordWidth', wordWidth);
+        }
+        
+        function adjustWidths(delta) {
+            const root = document.documentElement;
+            const currentPageWidth = parseInt(getComputedStyle(root).getPropertyValue('--page-sidebar-width'));
+            const currentWordWidth = parseInt(getComputedStyle(root).getPropertyValue('--word-sidebar-width'));
+            
+            const newPageWidth = Math.min(Math.max(currentPageWidth + delta, MIN_SIDEBAR_WIDTH), MAX_SIDEBAR_WIDTH);
+            const newWordWidth = Math.min(Math.max(currentWordWidth + (delta * 1.5), MIN_SIDEBAR_WIDTH), MAX_SIDEBAR_WIDTH);
+            
+            root.style.setProperty('--page-sidebar-width', newPageWidth + 'px');
+            root.style.setProperty('--word-sidebar-width', newWordWidth + 'px');
+            
+            saveWidths();
+        }
+        
+        function resetWidths() {
+            document.documentElement.style.setProperty('--page-sidebar-width', DEFAULT_PAGE_WIDTH + 'px');
+            document.documentElement.style.setProperty('--word-sidebar-width', DEFAULT_WORD_WIDTH + 'px');
+            localStorage.removeItem('pageWidth');
+            localStorage.removeItem('wordWidth');
+        }
+        
+        // Load widths on page load
+        loadWidths();
+        
+        // =============================================
+        // State Management
+        // =============================================
+        let fullData = [];
+        let sidebarOpen = false;
+        let currentWordIndex = -1; // Tracks the current active word
+
+        // =============================================
+        // DOM Elements
+        // =============================================
+        const menuToggle = document.getElementById('menuToggle');
+        const pageList = document.getElementById('pageList');
+        const mobilePageList = document.getElementById('mobilePageList');
+        const wordList = document.getElementById('wordList');
+        const mobileWordList = document.getElementById('mobileWordList');
+        const searchInput = document.getElementById('searchInput');
+        const pageSidebar = document.getElementById('pageSidebar');
+        const wordSidebar = document.getElementById('wordSidebar');
+        const welcomeMessage = document.getElementById('welcomeMessage');
+        const detailsArea = document.getElementById('detailsArea');
+        const selectedPageLabel = document.getElementById('selectedPageLabel');
+        const selectedPageNumber = document.getElementById('selectedPageNumber');
+        const mobileSelectedPageLabel = document.getElementById('mobileSelectedPageLabel');
+        const mobileSelectedPageNumber = document.getElementById('mobileSelectedPageNumber');
+
+        // =============================================
+        // Event Listeners
+        // =============================================
+        menuToggle.addEventListener('click', toggleMobileMenu);
+        searchInput.addEventListener('input', handleSearch);
+        document.getElementById('pageSearchInput').addEventListener('input', handlePageSearch);
+        document.getElementById('mobilePageSearchInput').addEventListener('input', handlePageSearch);
+        
+        // Width adjustment buttons
+        document.getElementById('decreaseWidth').addEventListener('click', () => adjustWidths(-WIDTH_STEP));
+        document.getElementById('increaseWidth').addEventListener('click', () => adjustWidths(WIDTH_STEP));
+        document.getElementById('resetWidth').addEventListener('click', resetWidths);
+
+        // Load CSV Data
+        Papa.parse("data.csv", {
+            download: true,
+            header: true,
+            complete: function(results) {
+                fullData = results.data.filter(row => row.Word);
+                renderPageSidebar(fullData);
+            }
+        });
+
+        // =============================================
+        // Mobile Menu Functions
+        // =============================================
+        function toggleMobileMenu() {
+            sidebarOpen = !sidebarOpen;
+            
+            if(sidebarOpen) {
+                pageSidebar.classList.remove('hidden');
+                pageSidebar.classList.add('fixed', 'bottom-0', 'right-0', 'top-20', 'z-40', 'w-64', 'border-l', 'flex', 'flex-col');
+                wordSidebar.classList.remove('hidden');
+                wordSidebar.classList.add('absolute', 'hidden');
+            } else {
+                pageSidebar.classList.add('hidden');
+                pageSidebar.classList.remove('fixed', 'bottom-0', 'right-0', 'top-20', 'z-40', 'w-64', 'border-l', 'flex', 'flex-col');
+                wordSidebar.classList.add('hidden');
+            }
+        }
+
+        function closeMobileMenu() {
+            if(window.innerWidth < 768) {
+                sidebarOpen = false;
+                pageSidebar.classList.add('hidden');
+                wordSidebar.classList.add('hidden');
+            }
+        }
+
+        // =============================================
+        // Page Functions
+        // =============================================
+        function renderPageSidebar(data) {
+    const pages = [...new Set(data.map(item => item.Page))].sort((a, b) => a - b);
+    
+    // Desktop Buttons
+    const pageHTML = pages.map(p => `
+        <button onclick="filterWordsByPage('${p}')" class="page-button">
+            ${p}
+        </button>
+    `).join('');
+    
+    // Mobile Buttons (added the same class)
+    const mobilePageHTML = pages.map(p => `
+        <button onclick="filterWordsByPage('${p}')" class="page-button">
+            ${p}
+        </button>
+    `).join('');
+    
+    pageList.innerHTML = pageHTML;
+    mobilePageList.innerHTML = mobilePageHTML;
+}
+
+        function filterWordsByPage(pageNum) {
+    // 1. Remove highlight from ALL page buttons
+    document.querySelectorAll('.page-button').forEach(btn => {
+        btn.classList.remove('active-page');
+    });
+
+    // 2. Add highlight to the clicked page button
+    // We search for the button that has the text matching the page number
+    const pageButtons = document.querySelectorAll('.page-button');
+    pageButtons.forEach(btn => {
+        if (btn.textContent.trim() === pageNum.toString()) {
+            btn.classList.add('active-page');
+        }
+    });
+
+    // 3. Existing logic to show words
+    const filtered = fullData.filter(item => item.Page === pageNum);
+    displayWords(filtered, pageNum);
+    
+    if (window.innerWidth < 768) {
+        closeMobileMenu();
+    }
+}
+
+        // =============================================
+        // Word Display Functions
+        // =============================================
+        function displayWords(words, pageNum = null) {
+    const wordHTML = words.map(w => {
+        const index = fullData.indexOf(w);
+        const hasLook = w.unzur && w.unzur.includes("انظر");
+        const lookIcon = hasLook ? '<span class="text-red-600 mr-1">📎</span> ' : '';
+        const wordStyle = hasLook ? 'text-red-600 font-bold' : '';
+
+        // CLEANED: Only using word-button class
+        return `
+            <button class="word-button" data-index="${index}">
+                <span class="${wordStyle}">${lookIcon}${w.Word}</span> 
+                <span class="text-[10px] opacity-50">[س ${w.Line}]</span>
+            </button>
+        `;
+    }).join('');
+    
+    wordList.innerHTML = wordHTML;
+    mobileWordList.innerHTML = wordHTML;
+            
+            // Add event listeners to word buttons
+            document.querySelectorAll('.word-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const index = this.dataset.index;
+                    const item = fullData[index];
+                    showDetails(item.Word, item.Page, item.Information, item.media);
+                });
+            });
+            
+            // Show page number label if pageNum is provided
+            if(pageNum !== null) {
+                selectedPageNumber.innerText = pageNum;
+                selectedPageLabel.classList.remove('hidden');
+                mobileSelectedPageNumber.innerText = pageNum;
+                mobileSelectedPageLabel.classList.remove('hidden');
+            }
+            
+            if(words.length > 0) {
+                welcomeMessage.classList.add('hidden');
+            }
+        }
+
+        function showDetails(word, page, info, mediaFile) {
+            document.getElementById('welcomeMessage').classList.add('hidden');
+            document.getElementById('detailsArea').classList.remove('hidden');
+            document.getElementById('displayPage').innerText = page;
+            document.getElementById('displayWord').innerText = word;
+            currentWordIndex = fullData.findIndex(item => item.Word === word && item.Page === page);
+            document.querySelectorAll('.word-button').forEach(btn => btn.classList.remove('active-word'));
+    // Find the button that matches the current global index
+    const activeWordBtn = document.querySelector(`.word-button[data-index="${currentWordIndex}"]`);
+    if (activeWordBtn) {
+        activeWordBtn.classList.add('active-word');
+    }
+    // ADD THIS TO HIGHLIGHT THE PAGE:
+    document.querySelectorAll('.page-button').forEach(btn => btn.classList.remove('active-page'));
+    const pageButtons = document.querySelectorAll('.page-button');
+    pageButtons.forEach(btn => {
+        if (btn.textContent.trim() === page.toString()) {
+            btn.classList.add('active-page');
+        }
+    });
+            
+            // Replace *** with horizontal line
+            const processedInfo = info.replace(/\*\*\*/g, '<hr class="my-4 border-t-2 border-gray-300">');
+            document.getElementById('displayInfo').innerHTML = processedInfo;
+
+            const mediaContainer = document.getElementById('mediaContainer');
+            const mediaContent = document.getElementById('mediaContent');
+            
+            // Clear previous media
+            mediaContent.innerHTML = "";
+            mediaContainer.classList.add('hidden');
+
+            if (mediaFile && mediaFile.trim() !== "" && mediaFile !== "undefined") {
+                mediaContainer.classList.remove('hidden');
+                
+                // Check if it's a Google Drive link
+                if (mediaFile.includes('drive.google.com')) {
+                    const fileId = mediaFile.match(/\/d\/([a-zA-Z0-9-_]+)/)?.[1];
+                    if (fileId) {
+                        const embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+                        mediaContent.innerHTML = `
+                            <iframe src="${embedUrl}" class="w-full h-64 sm:h-96 md:h-[500px] rounded border shadow-md" allowfullscreen loading="lazy"></iframe>
+                            <div class="flex justify-center mt-4">
+                                <a href="${mediaFile}" target="_blank" class="bg-red-500 text-white px-4 sm:px-6 py-2 rounded hover:bg-red-600 transition text-sm">فتح الملف</a>
+                            </div>`;
+                    }
+                    return;
+                }
+                
+                const fileExt = mediaFile.split('.').pop().toLowerCase();
+                const filePath = `assets/${mediaFile}`;
+
+                if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExt)) {
+                    // It's an image
+                    mediaContent.innerHTML = `<img src="${filePath}" class="max-w-full h-auto rounded-lg shadow-md" alt="${word}">`;
+                } else if (fileExt === 'pdf') {
+                    // It's a local PDF
+                    mediaContent.innerHTML = `
+                        <iframe src="${filePath}" class="w-full h-64 sm:h-96 md:h-[500px] rounded border shadow-md" allowfullscreen loading="lazy"></iframe>
+                        <div class="flex justify-center mt-4">
+                            <a href="${filePath}" target="_blank" class="bg-red-500 text-white px-4 sm:px-6 py-2 rounded hover:bg-red-600 transition text-sm">فتح الملف</a>
+                        </div>`;
+                } else if (['mp4', 'webm', 'ogg'].includes(fileExt)) {
+                    // It's a video
+                    mediaContent.innerHTML = `
+                        <video controls class="max-w-full h-auto rounded-lg shadow-md" style="max-height: 400px;">
+                            <source src="${filePath}" type="video/${fileExt === 'ogg' ? 'ogg' : fileExt}">
+                            متصفحك لا يدعم عنصر الفيديو
+                        </video>`;
+                } else if (['mp3', 'wav', 'ogg'].includes(fileExt)) {
+                    // It's an audio file
+                    mediaContent.innerHTML = `
+                        <div class="bg-gray-100 p-4 rounded-lg">
+                            <audio controls class="w-full mb-2">
+                                <source src="${filePath}" type="audio/${fileExt === 'ogg' ? 'ogg' : fileExt}">
+                                متصفحك لا يدعم عنصر الصوت
+                            </audio>
+                            <a href="${filePath}" target="_blank" class="block text-center bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition text-sm mt-2">تحميل الملف</a>
+                        </div>`;
+                } else {
+                    // For other file types, just show a download link
+                    mediaContent.innerHTML = `
+                        <div class="bg-gray-100 p-4 rounded-lg text-center">
+                            <p class="mb-3 text-gray-700 text-sm break-all">📎 ملف مرفق:<br><strong>${mediaFile}</strong></p>
+                            <a href="${filePath}" target="_blank" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition inline-block text-sm">تحميل الملف</a>
+                        </div>`;
+                }
+            }
+            
+            closeMobileMenu();
+        }
+
+        // =============================================
+        // Page Search Function
+        // =============================================
+        function handlePageSearch(e) {
+            const searchTerm = e.target.value.trim();
+            const pages = [...new Set(fullData.map(item => item.Page))].sort((a, b) => a - b);
+            
+            let filteredPages = pages;
+            if(searchTerm !== "") {
+                filteredPages = pages.filter(p => p.toString().includes(searchTerm));
+            }
+            
+            const pageHTML = filteredPages.map(p => `
+                <button onclick="filterWordsByPage('${p}')" class="w-full py-2 rounded hover:bg-blue-500 hover:text-white transition bg-white border text-xs sm:text-sm">
+                    ${p}
+                </button>
+            `).join('');
+            
+            const mobilePageHTML = filteredPages.map(p => `
+                <button onclick="filterWordsByPage('${p}')" class="py-2 px-2 rounded hover:bg-blue-500 hover:text-white transition bg-blue-50 border text-xs font-semibold text-center">
+                    ${p}
+                </button>
+            `).join('');
+            
+            pageList.innerHTML = pageHTML || '<p class="text-xs text-gray-400 col-span-4">لا توجد صفحات</p>';
+            mobilePageList.innerHTML = mobilePageHTML || '<p class="col-span-4 text-xs text-gray-400">لا توجد صفحات</p>';
+        }
+
+        // =============================================
+        // Search Functions
+        // =============================================
+        function removeDiacritics(text) {
+            return text.replace(/[\u064B-\u0652]/g, '');
+        }
+
+        function handleSearch(e) {
+    const term = e.target.value.toLowerCase();
+    // Get the label elements
+    const wordsHeader = document.getElementById('wordsHeader');
+    const mobileWordsHeader = document.getElementById('mobileWordsHeader');
+    
+    if(term === "") {
+        // 1. Show the labels again when search is cleared
+        if(wordsHeader) wordsHeader.classList.remove('hidden');
+        if(mobileWordsHeader) mobileWordsHeader.classList.remove('hidden');
+
+        renderPageSidebar(fullData);
+        wordList.innerHTML = "";
+        mobileWordList.innerHTML = "<p class=\"text-xs text-gray-400\">اختر صفحة أولاً</p>";
+        wordSidebar.scrollTop = 0; 
+        document.getElementById('mobileWordList').parentElement.scrollTop = 0;
+        selectedPageLabel.classList.add('hidden');
+        mobileSelectedPageLabel.classList.add('hidden');
+        return;
+    }
+    
+    // 2. Hide the labels whenever a search happens
+    if(wordsHeader) wordsHeader.classList.add('hidden');
+    if(mobileWordsHeader) mobileWordsHeader.classList.add('hidden');
+
+    const normalizedTerm = removeDiacritics(term);
+    const results = fullData.filter(item => removeDiacritics(item.Word).toLowerCase().includes(normalizedTerm));
+    
+    console.log('Search term:', term, 'Results:', results.length);
+    
+    if(results.length === 0) {
+        const noResultsMessage = '<div class="w-full text-center py-12 mt-8"><p class="text-red-600 font-bold text-base">لا توجد الكلمة</p></div>';
+        wordList.innerHTML = noResultsMessage;
+        mobileWordList.innerHTML = noResultsMessage;
+        selectedPageLabel.classList.add('hidden');
+        mobileSelectedPageLabel.classList.add('hidden');
+        pageList.innerHTML = ''; 
+        mobilePageList.innerHTML = '';
+        return;
+    }
+    
+    const searchHTML = '<div class="h-2"></div>' + results.map(w => {
+        const index = fullData.indexOf(w);
+        const hasLook = w.unzur && w.unzur.includes("انظر");
+        const lookIcon = hasLook ? '<span class="text-red-600 mr-1">📎</span> ' : '';
+        const wordStyle = hasLook ? 'text-red-600 font-bold' : '';
+
+        return `
+    <button class="word-button" data-index="${index}">
+        <span class="${wordStyle}">${lookIcon}${w.Word}</span> 
+        <span>[س ${w.Line}]</span>
+    </button>
+`;
+    }).join('');
+
+    wordList.innerHTML = searchHTML;
+    mobileWordList.innerHTML = searchHTML;
+
+    // 3. Re-attach click listeners so the search results work
+    document.querySelectorAll('.word-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const index = this.dataset.index;
+            const item = fullData[index];
+            showDetails(item.Word, item.Page, item.Information, item.media);
+        });
+    });
+
+    // 4. Reset scroll to top
+    wordSidebar.scrollTop = 0;
+    const mobileParent = document.getElementById('mobileWordList').parentElement;
+    if(mobileParent) mobileParent.scrollTop = 0;
+
+    selectedPageLabel.classList.add('hidden');
+    mobileSelectedPageLabel.classList.add('hidden');
+}
+// Function to navigate words
+function navigateWords(direction) {
+    if (currentWordIndex === -1) return;
+
+    const newIndex = currentWordIndex + direction;
+
+    if (newIndex >= 0 && newIndex < fullData.length) {
+        const item = fullData[newIndex];
+        const currentPage = fullData[currentWordIndex].Page;
+
+        // If the next word is on a different page, refresh the word list sidebar
+        if (item.Page !== currentPage) {
+            const wordsOnNewPage = fullData.filter(w => w.Page === item.Page);
+            displayWords(wordsOnNewPage, item.Page);
+        }
+        // Scroll the new word button into view
+        setTimeout(() => {
+            const activeBtn = document.querySelector(`.word-button[data-index="${newIndex}"]`);
+            if (activeBtn) {
+                activeBtn.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+        }, 100);
+    
+        
+        // Show the details
+        showDetails(item.Word, item.Page, item.Information, item.media);
+        
+        // IMPORTANT: Update the page highlight in the sidebar
+        document.querySelectorAll('.page-button').forEach(btn => {
+            btn.classList.remove('active-page');
+            if (btn.textContent.trim() === item.Page.toString()) {
+                btn.classList.add('active-page');
+            }
+        });
+
+        // Scroll the word into view
+        const buttons = document.querySelectorAll('.word-button');
+        const activeBtn = Array.from(buttons).find(b => b.dataset.index == newIndex);
+        if (activeBtn) {
+            activeBtn.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+    }
+}
+
+// Attach listeners to the navigation buttons
+document.getElementById('prevWord').addEventListener('click', () => navigateWords(-1));
+document.getElementById('nextWord').addEventListener('click', () => navigateWords(1));
+    </script>
+</body>
+</html>

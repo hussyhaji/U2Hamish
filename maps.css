@@ -1,0 +1,204 @@
+/* Base Styles */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Amiri', serif;
+    background-color: #fdfaf6;
+    color: #5d544b;
+    direction: rtl;
+}
+
+/* Header */
+.site-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 5%;
+    background-color: #f2e8df;
+}
+
+.main-nav ul {
+    display: flex;
+    list-style: none;
+    gap: 20px;
+    padding: 0;
+}
+
+.main-nav a { text-decoration: none; color: #5d544b; }
+
+/* Hero */
+.hero-section {
+    height: 350px;
+    background: url(oldmap.jpg) center/cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.hero-card {
+    position: relative;
+    background: #fffcf9;
+    padding: 30px 50px;
+    text-align: center;
+    border-radius: 8px;
+    z-index: 2;
+}
+
+/* Grid Logic: 3 per row on Landscape/Desktop */
+.content-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Forces 3 per row */
+    gap: 25px;
+    padding: 50px 5%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Responsive: 1 per row on Mobile */
+@media (max-width: 992px) {
+    .content-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 per row for tablets */
+    }
+}
+
+@media (max-width: 600px) {
+    .content-grid {
+        grid-template-columns: 1fr; /* 1 per row for phones */
+        padding: 30px 20px;
+    }
+    .hero-title { font-size: 28px; }
+}
+
+/* Post Cards */
+.post-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.4s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.post-card:hover {
+    transform: translateY(-8px);
+}
+
+/* Square Image Aspect Ratio */
+.img-wrapper {
+    width: 100%;
+    aspect-ratio: 1 / 1; /* Makes it a perfect square */
+    overflow: hidden;
+}
+
+.img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    cursor: zoom-in;
+    transition: transform 0.6s ease;
+}
+
+.post-card:hover .img-wrapper img {
+    transform: scale(1.15);
+}
+
+.card-content { padding: 20px; text-align: right; }
+.card-content h3 { margin: 10px 0; color: #4a443f; }
+.excerpt { font-size: 14px; color: #7a7169; line-height: 1.6; }
+
+.card-footer {
+    margin-top: 15px;
+    border-top: 1px solid #f2e8df;
+    padding-top: 10px;
+}
+
+.read-more { color: #a68b7c; font-weight: bold; cursor: pointer; }
+
+/* ... Keep your existing Site Header, Hero, Grid, Post Card styles ... */
+
+/* Upgraded Lightbox Styles */
+.lightbox {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95); /* Slightly darker background */
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+    cursor: default; /* Remove pointer cursor from background */
+}
+
+/* Container for the Zoomable Image (Crucial for OpenSeadragon) */
+#openseadragon-container {
+    width: 90%;
+    height: 90%;
+    background-color: transparent; /* library default is white */
+    border: 3px solid white;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+    overflow: hidden; /* library handles panning/zooming */
+}
+
+/* Close Button (Updated positioning for RTL consistency) */
+.close-btn {
+    position: absolute;
+    top: 20px;
+    right: 30px; /* Positioned on the right for RTL layout */
+    color: white;
+    font-size: 60px;
+    font-weight: 100;
+    cursor: pointer;
+    z-index: 2100;
+    line-height: 1;
+    transition: color 0.3s;
+}
+
+.close-btn:hover { color: #a68b7c; }
+
+/* Navigation Buttons Styles (NEW) */
+.nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: none;
+    padding: 20px 15px;
+    font-size: 30px;
+    cursor: pointer;
+    z-index: 2050;
+    border-radius: 4px;
+    transition: background 0.3s;
+}
+
+.nav-btn:hover { background: rgba(255, 255, 255, 0.3); }
+
+/* Position prev/next for RTL (Arrows point in logical direction of reading) */
+.prev-btn {
+    right: 50px; /* Moves to previous image (logical mapping) */
+}
+
+.next-btn {
+    left: 50px; /* Moves to next image (logical mapping) */
+}
+
+/* Hide grid images click ability, make entire card clickable */
+.post-card {
+    cursor: pointer;
+}
+.img-wrapper img {
+    cursor: inherit;
+}
+
+/* Mobile Adjustments for navigation buttons */
+@media (max-width: 600px) {
+    .nav-btn {
+        padding: 10px 8px;
+        font-size: 20px;
+    }
+    .prev-btn { right: 10px; }
+    .next-btn { left: 10px; }
+    #openseadragon-container { width: 95%; height: 85%; }
+}
