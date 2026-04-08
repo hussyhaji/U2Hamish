@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فهرست كتاب عيون الاخبار - الجزء الثاني</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #f9f9fb;
+            --card-bg: #ffffff;
+            --shadow: 0 10px 25px rgba(0,0,0,0.08);
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        body {
+            font-family: 'Amiri', serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 1000px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #intro-view {
+            text-align: center;
+            width: 100%;
+        }
+
+        h1 {
+            color: #2d3436;
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            margin-bottom: 30px;
+        }
+
+        /* تنسيق القائمة - متجاوب */
+        .pie-wrapper {
+            position: relative;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            width: 100%;
+        }
+
+        /* تحويل القائمة إلى دائرة فقط في الشاشات الكبيرة */
+        @media (min-width: 800px) {
+            .pie-wrapper {
+                display: block;
+                width: 600px;
+                height: 600px;
+            }
+            .pie-item {
+                position: absolute;
+                width: 130px;
+                height: 130px;
+                border-radius: 50% !important;
+                transform: translate(-50%, -50%);
+            }
+            .pie-item:hover {
+                transform: translate(-50%, -50%) scale(1.2);
+                z-index: 100;
+            }
+        }
+
+        .pie-item {
+            background-color: white;
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #444;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border: 4px solid white;
+            text-align: center;
+            padding: 15px;
+            user-select: none;
+        }
+
+        .pie-item:active {
+            transform: scale(0.95);
+        }
+
+        /* تنسيق الجدول */
+        #table-view {
+            display: none;
+            width: 100%;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .header-bar {
+            display: grid;
+            grid-template-columns: 100px 1fr 100px;
+            align-items: center;
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .back-btn {
+            font-family: 'Amiri', serif;
+            background-color: #f1f2f6;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: 0.3s;
+            white-space: nowrap;
+        }
+
+        #current-category {
+            margin: 0;
+            color: #2d3436;
+            font-size: clamp(1.2rem, 4vw, 1.8rem);
+            text-align: center;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            overflow-x: auto; /* يسمح بالتمرير يميناً ويساراً في الموبايل */
+            max-height: 70vh;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: right;
+            min-width: 500px; /* لضمان عدم ضغط الجدول جداً في الموبايل */
+        }
+
+        thead {
+            position: sticky;
+            top: 0;
+            background-color: #f8f9fa;
+            z-index: 10;
+        }
+
+        th { 
+            padding: 15px; 
+            border-bottom: 2px solid #eee; 
+            color: #636e72; 
+            font-size: 1.2rem;
+        }
+
+        td { 
+            padding: 12px 15px; 
+            border-bottom: 1px solid #f1f1f1; 
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <div id="intro-view">
+            <h1>فهرست كتاب عيون الاخبار - الجزء الثاني</h1>
+            <div id="loader" style="font-size: 1.2rem; margin-top: 20px;">جاري تحميل البيانات...</div>
+            <div class="pie-wrapper" id="pie-menu" style="display:none;"></div>
+        </div>
+
+        <div id="table-view">
+            <div class="header-bar">
+                <button class="back-btn" onclick="goBack()">← الرجوع</button>
+                <h2 id="current-category"></h2>
+                <div></div> </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 70%;">النص</th>
+                            <th style="width: 30%; text-align: center;">الصفحة / السطر</th>
+                        </tr>
+                    </thead>
+                    <tbody id="data-rows"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+<script>
+    let bookData = [];
+    const csvFileName = 'U2_FehristDatabaseView1.csv'; 
+
+    const categories = [
+        { name: "الايات الكريمة", color: "#FFD1DC" },
+        { name: "الاحاديث", color: "#E0BBE4" },
+        { name: "الاكاليم", color: "#957DAD" },
+        { name: "الاعلام", color: "#D291BC" },
+        { name: "الاماكن", color: "#FEC8D8" },
+        { name: "القبائل", color: "#FFDFD3" },
+        { name: "الحيوانات", color: "#B5EAD7" },
+        { name: "الاشعار", color: "#C7CEEA" },
+        { name: "الكتب", color: "#E2F0CB" },
+        { name: "الامثال", color: "#F7E1AD" }
+    ];
+
+    function convertToArabicNumbers(str) {
+        const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+        return str.replace(/[0-9]/g, function(w) {
+            return arabicNumbers[+w];
+        });
+    }
+
+    function loadCSV() {
+        Papa.parse(csvFileName, {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+                bookData = results.data;
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('pie-menu').style.display = window.innerWidth >= 800 ? 'block' : 'grid';
+                initMenu();
+            },
+            error: function() {
+                document.getElementById('loader').innerText = "خطأ في تحميل البيانات";
+            }
+        });
+    }
+
+    function initMenu() {
+        const menu = document.getElementById('pie-menu');
+        menu.innerHTML = '';
+        const isDesktop = window.innerWidth >= 800;
+        const radius = 240; 
+
+        categories.forEach((cat, i) => {
+            const div = document.createElement('div');
+            div.className = 'pie-item';
+            div.innerText = cat.name;
+            div.style.backgroundColor = cat.color;
+            
+            if (isDesktop) {
+                const angle = (i / categories.length) * (Math.PI * 2);
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
+                div.style.left = `calc(50% + ${x}px)`;
+                div.style.top = `calc(50% + ${y}px)`;
+            }
+            
+            div.onclick = () => showCategory(cat.name);
+            menu.appendChild(div);
+        });
+    }
+
+    function showCategory(name) {
+        document.getElementById('intro-view').style.display = 'none';
+        document.getElementById('table-view').style.display = 'block';
+        document.getElementById('current-category').innerText = name;
+
+        const tbody = document.getElementById('data-rows');
+        tbody.innerHTML = '';
+
+        const filtered = bookData.filter(row => row['الصنف'] === name);
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="2" style="text-align:center; padding:30px;">لا توجد بيانات</td></tr>';
+        } else {
+            filtered.forEach(row => {
+                const tr = document.createElement('tr');
+                const arabicPageLine = convertToArabicNumbers(row['الصحفة السطر'] || '');
+                tr.innerHTML = `
+                    <td>${row['النص']}</td>
+                    <td style="text-align:center; font-weight: bold;">${arabicPageLine}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        window.scrollTo(0,0);
+    }
+
+    function goBack() {
+        document.getElementById('table-view').style.display = 'none';
+        document.getElementById('intro-view').style.display = 'block';
+    }
+
+    // إعادة رسم القائمة عند تغيير حجم الشاشة لضمان التجاوب
+    window.onresize = initMenu;
+    window.onload = loadCSV;
+</script>
+
+</body>
+</html>
