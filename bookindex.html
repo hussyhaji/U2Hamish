@@ -37,12 +37,16 @@
         #intro-view {
             text-align: center;
             width: 100%;
+            position: relative;
+            z-index: 5;
         }
 
         h1 {
             color: #2d3436;
             font-size: clamp(1.5rem, 5vw, 2.5rem);
             margin-bottom: 30px;
+            position: relative;
+            z-index: 10;
         }
 
         /* تنسيق القائمة - متجاوب */
@@ -53,6 +57,8 @@
             grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             gap: 15px;
             width: 100%;
+            z-index: 30; /* Higher than h1 and others */
+            pointer-events: none; /* Allow events through wrapper but items will have pointer-events: auto */
         }
 
         /* تحويل القائمة إلى دائرة فقط في الشاشات الكبيرة */
@@ -68,6 +74,7 @@
                 height: 130px;
                 border-radius: 50% !important;
                 transform: translate(-50%, -50%);
+                z-index: 40;
             }
             .pie-item:hover {
                 transform: translate(-50%, -50%) scale(1.2);
@@ -91,6 +98,9 @@
             text-align: center;
             padding: 15px;
             user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            pointer-events: auto; /* Enable clicks on items */
+            z-index: 40;
         }
 
         .pie-item:active {
@@ -285,13 +295,15 @@
                 document.getElementById('pie-menu').style.display = window.innerWidth >= 800 ? 'block' : 'grid';
                 initMenu();
                 
-                // Check if the page was loaded with a category in the hash
-                const hash = decodeURIComponent(window.location.hash.substring(1));
-                if (hash && categories.some(cat => cat.name === hash)) {
-                    // Replace initial state with the pie menu, then push the category
-                    history.replaceState({ category: null }, "", window.location.pathname);
-                    showCategory(hash, 'push');
-                }
+                // Small delay to ensure the DOM is fully ready before hash-based navigation
+                setTimeout(() => {
+                    const hash = decodeURIComponent(window.location.hash.substring(1));
+                    if (hash && categories.some(cat => cat.name === hash)) {
+                        // Replace initial state with the pie menu, then push the category
+                        history.replaceState({ category: null }, "", window.location.pathname);
+                        showCategory(hash, 'push');
+                    }
+                }, 100);
             },
             error: function() {
                 document.getElementById('loader').innerText = "خطأ في تحميل البيانات";
@@ -299,10 +311,21 @@
         });
     }
 
+    let lastWidth = window.innerWidth;
+    let resizeTimer;
+    
     function initMenu() {
+        const currentWidth = window.innerWidth;
         const menu = document.getElementById('pie-menu');
+        if (!menu) return;
+
+        // Only re-render if the width has changed (to avoid unnecessary clears)
+        // or if the menu is empty.
+        if (currentWidth === lastWidth && menu.innerHTML !== '') return;
+        lastWidth = currentWidth;
+
         menu.innerHTML = '';
-        const isDesktop = window.innerWidth >= 800;
+        const isDesktop = currentWidth >= 800;
         const radius = 240; 
 
         categories.forEach((cat, i) => {
@@ -319,43 +342,71 @@
                 div.style.top = `calc(50% + ${y}px)`;
             }
             
-            div.onclick = () => showCategory(cat.name);
+            // Single event listener for both touch and click
+            const selectCategory = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                showCategory(cat.name);
+            };
+            
+            // Use pointerdown for the most immediate response
+            div.addEventListener('pointerdown', selectCategory);
+            
             menu.appendChild(div);
         });
     }
 
+    function handleResize() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            initMenu();
+        }, 200);
+    }
+
     function showCategory(name, historyAction = 'push') {
-        document.getElementById('intro-view').style.display = 'none';
-        document.getElementById('table-view').style.display = 'block';
+        const introView = document.getElementById('intro-view');
+        const tableView = document.getElementById('table-view');
+        
+        if (!introView || !tableView) return;
+
+        introView.style.display = 'none';
+        tableView.style.display = 'block';
         document.getElementById('current-category').innerText = name;
 
         // Manage history
-        if (historyAction === 'push') {
-            history.pushState({ category: name }, "", "#" + name);
-        } else if (historyAction === 'replace') {
-            history.replaceState({ category: name }, "", "#" + name);
+        try {
+            if (historyAction === 'push') {
+                history.pushState({ category: name }, "", "#" + encodeURIComponent(name));
+            } else if (historyAction === 'replace') {
+                history.replaceState({ category: name }, "", "#" + encodeURIComponent(name));
+            }
+        } catch (e) {
+            console.error("History API error:", e);
         }
 
         const tbody = document.getElementById('data-rows');
-        tbody.innerHTML = '';
+        if (tbody) {
+            tbody.innerHTML = '';
 
-        const filtered = bookData.filter(row => row['الصنف'] === name);
+            const filtered = bookData.filter(row => row['الصنف'] === name);
 
-        if (filtered.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="2" style="text-align:center; padding:30px;">لا توجد بيانات</td></tr>';
-        } else {
-            filtered.forEach(row => {
-                const tr = document.createElement('tr');
-                const arabicPageLine = convertToArabicNumbers(row['الصحفة السطر'] || '');
-                tr.innerHTML = `
-                    <td class="col-text">${row['النص']}</td>
-                    <td class="col-page">${arabicPageLine}</td>
-                `;
-                tbody.appendChild(tr);
-            });
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="2" style="text-align:center; padding:30px;">لا توجد بيانات</td></tr>';
+            } else {
+                filtered.forEach(row => {
+                    const tr = document.createElement('tr');
+                    const arabicPageLine = convertToArabicNumbers(row['الصحفة السطر'] || '');
+                    tr.innerHTML = `
+                        <td class="col-text">${row['النص']}</td>
+                        <td class="col-page">${arabicPageLine}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
         }
         window.scrollTo(0,0);
     }
+    window.showCategory = showCategory; // Ensure global access for popstate or other triggers
 
     function goBack() {
         if (history.state && history.state.category) {
@@ -365,6 +416,7 @@
             document.getElementById('table-view').style.display = 'none';
             document.getElementById('intro-view').style.display = 'block';
             history.replaceState(null, "", window.location.pathname);
+            initMenu(); // Ensure menu is ready when going back
         }
     }
 
@@ -377,11 +429,12 @@
             // If no category (initial state), show the pie menu
             document.getElementById('table-view').style.display = 'none';
             document.getElementById('intro-view').style.display = 'block';
+            initMenu(); // Ensure menu is ready when going back
         }
     });
 
-    // إعادة رسم القائمة عند تغيير حجم الشاشة لضمان التجاوب
-    window.onresize = initMenu;
+    // Use debounced resize listener
+    window.addEventListener('resize', handleResize);
     window.onload = loadCSV;
 </script>
 
