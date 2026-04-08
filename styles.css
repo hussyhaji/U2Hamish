@@ -82,7 +82,7 @@ header {
 /* Active Highlight for Page */
 .active-page {
     background-color: #e2ece9;
-    color: 0096c7 !important;
+    color: #0096c7 !important;
     font-weight: bold !important;
     border: 2px solid;
     border-color: #bee1e6;
