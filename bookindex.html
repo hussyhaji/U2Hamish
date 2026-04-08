@@ -143,10 +143,12 @@
         }
 
         table {
-            width: 100%;
+            width: auto;
+            max-width: 100%;
+            margin-right: 15px; /* Small gap from right border */
+            margin-left: auto;  /* Push to the right */
             border-collapse: collapse;
             text-align: right;
-            table-layout: fixed;
         }
 
         thead {
@@ -171,13 +173,17 @@
         }
 
         .col-text {
-            width: 75%;
+            width: auto;
+            max-width: 70%; /* Prevents text from pushing table off screen */
+            padding-left: 15px; /* Gap before numbers row */
         }
 
         .col-page {
-            width: 25%;
-            text-align: center;
+            width: auto;
+            text-align: right;
+            padding-right: 15px;
             font-weight: bold;
+            word-wrap: break-word; /* Allow wrapping within the cell */
         }
 
         @keyframes slideIn {
@@ -207,17 +213,22 @@
                 font-size: 0.95rem;
             }
             table {
-                min-width: 100%; /* Allow it to fit the screen */
+                width: auto;
+                min-width: 90%;
+                margin-right: 10px;
+                margin-left: auto;
             }
             .col-text {
-                width: 70%;
+                width: auto;
+                max-width: 65%;
                 word-wrap: break-word;
                 overflow-wrap: break-word;
             }
             .col-page {
-                width: 30%;
+                width: auto;
+                text-align: right;
+                padding-right: 10px;
                 padding-left: 2px;
-                padding-right: 2px;
             }
         }
     </style>
