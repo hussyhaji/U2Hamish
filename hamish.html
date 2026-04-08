@@ -306,6 +306,11 @@
     
     if (window.innerWidth < 768) {
         closeMobileMenu();
+        // Scroll to mobile words section
+        const mobileWordsBox = document.getElementById('mobileWordsBox');
+        if (mobileWordsBox) {
+            mobileWordsBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     }
 }
 
@@ -468,6 +473,15 @@
             }
             
             closeMobileMenu();
+
+            // Auto-scroll on mobile
+            if (window.innerWidth < 768) {
+                const detailsArea = document.getElementById('detailsArea');
+                // Small delay to ensure the content is rendered and visible before scrolling
+                setTimeout(() => {
+                    detailsArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
         }
 
         // =============================================
