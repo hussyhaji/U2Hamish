@@ -146,7 +146,7 @@
             width: 100%;
             border-collapse: collapse;
             text-align: right;
-            min-width: 500px; /* لضمان عدم ضغط الجدول جداً في الموبايل */
+            table-layout: fixed;
         }
 
         thead {
@@ -170,9 +170,55 @@
             line-height: 1.6;
         }
 
+        .col-text {
+            width: 75%;
+        }
+
+        .col-page {
+            width: 25%;
+            text-align: center;
+            font-weight: bold;
+        }
+
         @keyframes slideIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Mobile specific adjustments */
+        @media (max-width: 600px) {
+            .main-container {
+                padding: 10px;
+            }
+            .header-bar {
+                padding: 10px;
+                grid-template-columns: 80px 1fr 20px;
+            }
+            .back-btn {
+                padding: 6px 10px;
+                font-size: 0.9rem;
+            }
+            th {
+                padding: 10px 8px;
+                font-size: 1rem;
+            }
+            td {
+                padding: 8px;
+                font-size: 0.95rem;
+            }
+            table {
+                min-width: 100%; /* Allow it to fit the screen */
+            }
+            .col-text {
+                width: 70%;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+            }
+            .col-page {
+                width: 30%;
+                padding-left: 2px;
+                padding-right: 2px;
+            }
         }
     </style>
 </head>
@@ -194,8 +240,8 @@
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 70%;">النص</th>
-                            <th style="width: 30%; text-align: center;">الصفحة / السطر</th>
+                            <th class="col-text">النص</th>
+                            <th class="col-page">الصفحة / السطر</th>
                         </tr>
                     </thead>
                     <tbody id="data-rows"></tbody>
@@ -238,6 +284,14 @@
                 document.getElementById('loader').style.display = 'none';
                 document.getElementById('pie-menu').style.display = window.innerWidth >= 800 ? 'block' : 'grid';
                 initMenu();
+                
+                // Check if the page was loaded with a category in the hash
+                const hash = decodeURIComponent(window.location.hash.substring(1));
+                if (hash && categories.some(cat => cat.name === hash)) {
+                    // Replace initial state with the pie menu, then push the category
+                    history.replaceState({ category: null }, "", window.location.pathname);
+                    showCategory(hash, 'push');
+                }
             },
             error: function() {
                 document.getElementById('loader').innerText = "خطأ في تحميل البيانات";
@@ -270,10 +324,17 @@
         });
     }
 
-    function showCategory(name) {
+    function showCategory(name, historyAction = 'push') {
         document.getElementById('intro-view').style.display = 'none';
         document.getElementById('table-view').style.display = 'block';
         document.getElementById('current-category').innerText = name;
+
+        // Manage history
+        if (historyAction === 'push') {
+            history.pushState({ category: name }, "", "#" + name);
+        } else if (historyAction === 'replace') {
+            history.replaceState({ category: name }, "", "#" + name);
+        }
 
         const tbody = document.getElementById('data-rows');
         tbody.innerHTML = '';
@@ -287,8 +348,8 @@
                 const tr = document.createElement('tr');
                 const arabicPageLine = convertToArabicNumbers(row['الصحفة السطر'] || '');
                 tr.innerHTML = `
-                    <td>${row['النص']}</td>
-                    <td style="text-align:center; font-weight: bold;">${arabicPageLine}</td>
+                    <td class="col-text">${row['النص']}</td>
+                    <td class="col-page">${arabicPageLine}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -297,9 +358,27 @@
     }
 
     function goBack() {
-        document.getElementById('table-view').style.display = 'none';
-        document.getElementById('intro-view').style.display = 'block';
+        if (history.state && history.state.category) {
+            history.back();
+        } else {
+            // Fallback for cases where history wasn't pushed correctly
+            document.getElementById('table-view').style.display = 'none';
+            document.getElementById('intro-view').style.display = 'block';
+            history.replaceState(null, "", window.location.pathname);
+        }
     }
+
+    // Handle browser back button (mobile and desktop)
+    window.addEventListener('popstate', (event) => {
+        if (event.state && event.state.category) {
+            // If there's a category in the state, show it
+            showCategory(event.state.category, 'none');
+        } else {
+            // If no category (initial state), show the pie menu
+            document.getElementById('table-view').style.display = 'none';
+            document.getElementById('intro-view').style.display = 'block';
+        }
+    });
 
     // إعادة رسم القائمة عند تغيير حجم الشاشة لضمان التجاوب
     window.onresize = initMenu;
