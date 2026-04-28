@@ -70,6 +70,12 @@ def extract_to_final_csv(word_path, csv_path):
                             run_text = run_text.replace("  ", "&nbsp;&nbsp;")
                             if run.font.superscript:
                                 run_text = f"<sup>{run_text}</sup>"
+                            # Preserve bold formatting
+                            if run.font.bold:
+                                run_text = f"<b>{run_text}</b>"
+                            # Preserve underline formatting
+                            if run.font.underline:
+                                run_text = f"<u>{run_text}</u>"
                             line_html += run_text
                     
                     # Apply centering if asterisk is present
