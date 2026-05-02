@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> كتاب عيون الأخبار - الجزء الثاني </title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="home.css">
+    <link rel="stylesheet" href="home.css">
+</head>
+<body>
+
+    <section class="hero-banner">
+        <div class="banner-overlay">
+            <h1>كتاب عيون الأخبار - الجزء الثاني</h1>
+        </div>
+    </section>
+
+    <div class="container">
+        <div class="nav-grid">
+            
+            <a href="hamish.html" class="nav-card card-1">
+                <img src="icons/hamish.png" alt="" class="hover-img">
+                <span class="card-title">الهامش</span>
+            </a>
+
+            <a href="maps.html" class="nav-card card-2">
+                <img src="icons/map.png" alt="" class="hover-img">
+                <span class="card-title">الخرائط</span>
+            </a>
+
+            <a href="paintings.html" class="nav-card card-3">
+                <img src="icons/lawhaat.png" alt="" class="hover-img">
+                <span class="card-title">اللوحات</span>
+            </a>
+
+            <a href="bookindex.html" class="nav-card card-4">
+                <img src="icons/fehrist.png" alt="" class="hover-img">
+                <span class="card-title">الفهرست</span>
+            </a>
+
+            <a href="poetry.html" class="nav-card card-5">
+                <img src="icons/poetry_icon.png" alt="" class="hover-img">
+                <span class="card-title">الأشعار</span>
+            </a>
+
+            <a href="about.html" class="nav-card card-6">
+                <img src="icons/info_icon.png" alt="" class="hover-img">
+                <span class="card-title">عن الكتاب</span>
+            </a>
+
+        </div>
+    </div>
+
+    <script>
+        // Check if user is logged in
+        const loggedInUser = localStorage.getItem('loggedInUser');
+        if (!loggedInUser) {
+            // Redirect to login if not logged in
+            window.location.href = 'login.html';
+        } else {
+            // Add logout button
+            const container = document.querySelector('.container');
+            const logoutDiv = document.createElement('div');
+            logoutDiv.style.textAlign = 'center';
+            logoutDiv.style.marginTop = '20px';
+            logoutDiv.innerHTML = `
+                <p>Welcome, ${loggedInUser.split('@')[0]}!</p>
+                <button onclick="logout()" style="
+                    padding: 10px 20px;
+                    background: #f44336;
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-size: 16px;
+                ">Logout</button>
+            `;
+            container.appendChild(logoutDiv);
+        }
+
+        function logout() {
+            localStorage.removeItem('loggedInUser');
+            window.location.href = 'login.html';
+        }
+    </script>
+
+</body>
+</html>

@@ -1,59 +1,24 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> كتاب عيون الأخبار - الجزء الثاني </title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
-
-<link rel="stylesheet" href="home.css">
-    <link rel="stylesheet" href="home.css">
+    <title>Login</title>
+    <link rel="stylesheet" href="login.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-
-    <section class="hero-banner">
-        <div class="banner-overlay">
-            <h1>كتاب عيون الأخبار - الجزء الثاني</h1>
+    <div class="login-container">
+        <h1>Login</h1>
+        <p>Please sign in with your Google account</p>
+        <div id="g_id_onload"
+             data-client_id="621626564464-3im5bphjsqod5k89839kvvqpitkfqip1.apps.googleusercontent.com"
+             data-callback="handleCredentialResponse">
         </div>
-    </section>
-
-    <div class="container">
-        <div class="nav-grid">
-            
-            <a href="hamish.html" class="nav-card card-1">
-                <img src="icons/hamish.png" alt="" class="hover-img">
-                <span class="card-title">الهامش</span>
-            </a>
-
-            <a href="maps.html" class="nav-card card-2">
-                <img src="icons/map.png" alt="" class="hover-img">
-                <span class="card-title">الخرائط</span>
-            </a>
-
-            <a href="paintings.html" class="nav-card card-3">
-                <img src="icons/lawhaat.png" alt="" class="hover-img">
-                <span class="card-title">اللوحات</span>
-            </a>
-
-            <a href="bookindex.html" class="nav-card card-4">
-                <img src="icons/fehrist.png" alt="" class="hover-img">
-                <span class="card-title">الفهرست</span>
-            </a>
-
-            <a href="poetry.html" class="nav-card card-5">
-                <img src="icons/poetry_icon.png" alt="" class="hover-img">
-                <span class="card-title">الأشعار</span>
-            </a>
-
-            <a href="about.html" class="nav-card card-6">
-                <img src="icons/info_icon.png" alt="" class="hover-img">
-                <span class="card-title">عن الكتاب</span>
-            </a>
-
-        </div>
+        <div class="g_id_signin" data-type="standard"></div>
+        <div id="message"></div>
     </div>
-
+    <script src="login.js"></script>
 </body>
-</html>
+</html></content>
+<parameter name="filePath">c:\Files\U2_Hamish\login.html
