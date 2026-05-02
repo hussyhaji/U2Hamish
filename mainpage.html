@@ -55,38 +55,7 @@
         </div>
     </div>
 
-    <script>
-        // Check if user is logged in
-        const loggedInUser = localStorage.getItem('loggedInUser');
-        if (!loggedInUser) {
-            // Redirect to login if not logged in
-            window.location.href = 'login.html';
-        } else {
-            // Add logout button
-            const container = document.querySelector('.container');
-            const logoutDiv = document.createElement('div');
-            logoutDiv.style.textAlign = 'center';
-            logoutDiv.style.marginTop = '20px';
-            logoutDiv.innerHTML = `
-                <p>Welcome, ${loggedInUser.split('@')[0]}!</p>
-                <button onclick="logout()" style="
-                    padding: 10px 20px;
-                    background: #f44336;
-                    color: white;
-                    border: none;
-                    border-radius: 5px;
-                    cursor: pointer;
-                    font-size: 16px;
-                ">Logout</button>
-            `;
-            container.appendChild(logoutDiv);
-        }
-
-        function logout() {
-            localStorage.removeItem('loggedInUser');
-            window.location.href = 'login.html';
-        }
-    </script>
+   
 
 </body>
 </html>
