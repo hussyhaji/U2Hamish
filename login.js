@@ -12,6 +12,7 @@ function handleCredentialResponse(response) {
 
         messageBox.style.color = "green";
         messageBox.innerText = "Access Granted: " + email;
+        document.body.classList.add("page-exit");
 
         // ✅ Redirect to main page
         setTimeout(() => {

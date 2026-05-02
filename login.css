@@ -57,3 +57,12 @@ p {
     color: #c62828;
     border: 1px solid #f44336;
 }
+
+body {
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+body.page-exit {
+    opacity: 0;
+    transform: scale(0.98);
+}
