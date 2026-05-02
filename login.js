@@ -10,7 +10,7 @@ function handleCredentialResponse(response) {
 
         // ✅ Redirect to your main site
         setTimeout(() => {
-            window.location.href = "index.html"; // change if needed
+            window.location.href = "mainpage.html"; // change if needed
         }, 1000);
 
     } else {
