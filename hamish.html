@@ -20,6 +20,13 @@
         #wordSidebar {
             width: var(--word-sidebar-width) !important;
         }
+
+        mark.search-highlight {
+            background-color: #fff3bf;
+            color: #000;
+            padding: 0 0.15rem;
+            border-radius: 0.2rem;
+        }
     </style>
 </head>
 <body class="bg-gray-50 h-screen flex flex-col">
@@ -34,12 +41,17 @@
             </button>
             <h1 class="text-lg sm:text-xl font-bold text-blue-800 flex-1 sm:flex-none">هوامش كتاب عيون الاخبار - الجزء الثاني</h1>
         </div>
-        <div class="flex items-center gap-2 w-full sm:w-auto flex-wrap">
-            <input 
-                type="text" 
-                id="searchInput" 
-                placeholder="ابحث عن كلمة..." 
-                class="border rounded-lg px-3 sm:px-4 py-2 flex-1 sm:flex-none sm:w-96 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+        <div class="flex flex-col sm:flex-row items-stretch gap-2 w-full sm:w-auto">
+            <div class="flex flex-col sm:flex-row items-stretch gap-2 w-full sm:w-auto">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="ابحث عن كلمة..." 
+                    class="border rounded-lg px-3 sm:px-4 py-2 flex-1 min-w-0 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                <button id="advancedSearchToggle" class="border border-gray-300 bg-white px-4 py-2 rounded-lg hover:bg-gray-100 text-sm flex-shrink-0" title="بحث متقدم">
+                    🔎
+                </button>
+            </div>
             <div class="hidden md:flex items-center gap-1">
                 <button id="decreaseWidth" class="p-2 hover:bg-gray-100 rounded-lg text-sm" title="تقليل العرض">−</button>
                 <button id="resetWidth" class="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded" title="إعادة تعيين">إعادة</button>
@@ -47,6 +59,19 @@
             </div>
         </div>
     </header>
+
+    <!-- Advanced Search Panel -->
+    <div id="advancedSearchPanel" class="hidden bg-white border-b border-gray-200 px-4 py-4 sm:px-6">
+        <div class="max-w-full mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <input
+                type="text"
+                id="advancedSearchInput"
+                placeholder="بحث متقدم عن كلمة أو معلومات..."
+                class="border rounded-lg px-3 py-2 w-full sm:flex-1 min-w-0 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            <button id="advancedSearchClear" class="w-full sm:w-auto border border-gray-300 bg-gray-50 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-100 text-sm">مسح البحث</button>
+        </div>
+        <p class="mt-2 text-xs text-gray-500">يبحث هذا في جميع الكلمات والمعلومات داخل البيانات كاملة ويعرض النتائج في مربع قائمة الكلمات.</p>
+    </div>
 
     <!-- Main Container -->
     <div class="flex flex-1 overflow-hidden">
@@ -192,6 +217,7 @@
         let fullData = [];
         let sidebarOpen = false;
         let currentWordIndex = -1; // Tracks the current active word
+        let lastSearchTerm = '';
 
         // =============================================
         // DOM Elements
@@ -202,6 +228,10 @@
         const wordList = document.getElementById('wordList');
         const mobileWordList = document.getElementById('mobileWordList');
         const searchInput = document.getElementById('searchInput');
+        const advancedSearchToggle = document.getElementById('advancedSearchToggle');
+        const advancedSearchPanel = document.getElementById('advancedSearchPanel');
+        const advancedSearchInput = document.getElementById('advancedSearchInput');
+        const advancedSearchClear = document.getElementById('advancedSearchClear');
         const pageSidebar = document.getElementById('pageSidebar');
         const wordSidebar = document.getElementById('wordSidebar');
         const welcomeMessage = document.getElementById('welcomeMessage');
@@ -216,6 +246,9 @@
         // =============================================
         menuToggle.addEventListener('click', toggleMobileMenu);
         searchInput.addEventListener('input', handleSearch);
+        advancedSearchToggle.addEventListener('click', toggleAdvancedSearchPanel);
+        advancedSearchInput.addEventListener('input', handleAdvancedSearch);
+        advancedSearchClear.addEventListener('click', clearAdvancedSearch);
         document.getElementById('pageSearchInput').addEventListener('input', handlePageSearch);
         document.getElementById('mobilePageSearchInput').addEventListener('input', handlePageSearch);
         
@@ -401,7 +434,8 @@
     }
     
     const processedInfo = info.replace(/\*\*\*/g, '<hr class="my-4 border-t-2 border-gray-300">');
-    document.getElementById('displayInfo').innerHTML = processedInfo;
+    const highlightedInfo = lastSearchTerm ? highlightMatch(processedInfo, lastSearchTerm) : processedInfo;
+    document.getElementById('displayInfo').innerHTML = highlightedInfo;
 
     const mediaContainer = document.getElementById('mediaContainer');
     const mediaContent = document.getElementById('mediaContent');
@@ -502,6 +536,106 @@ if (mediaFile && mediaFile.trim() !== "" && mediaFile !== "undefined") {
             mobilePageList.innerHTML = mobilePageHTML || '<p class="col-span-4 text-xs text-gray-400">لا توجد صفحات</p>';
         }
 
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        function highlightMatch(text, searchTerm) {
+            if (!searchTerm) return text;
+            const escaped = escapeRegExp(searchTerm);
+            const regex = new RegExp(escaped, 'gi');
+            return text.replace(regex, match => `<mark class="search-highlight">${match}</mark>`);
+        }
+
+        function toggleAdvancedSearchPanel() {
+            advancedSearchPanel.classList.toggle('hidden');
+            if (!advancedSearchPanel.classList.contains('hidden')) {
+                advancedSearchInput.focus();
+            }
+        }
+
+        function clearAdvancedSearch() {
+            advancedSearchInput.value = '';
+            wordList.innerHTML = '<p class="text-xs text-gray-400">اختر صفحة أولاً</p>';
+            mobileWordList.innerHTML = '<p class="text-xs text-gray-400">اختر صفحة أولاً</p>';
+            selectedPageLabel.classList.add('hidden');
+            mobileSelectedPageLabel.classList.add('hidden');
+            if (window.innerWidth < 768) {
+                const mobileWordsBox = document.getElementById('mobileWordsBox');
+                if (mobileWordsBox) mobileWordsBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function handleAdvancedSearch(e) {
+            const term = e.target.value.trim().toLowerCase();
+            const wordsHeader = document.getElementById('wordsHeader');
+            const mobileWordsHeader = document.getElementById('mobileWordsHeader');
+
+            if (term === "") {
+                lastSearchTerm = '';
+                if(wordsHeader) wordsHeader.classList.remove('hidden');
+                if(mobileWordsHeader) mobileWordsHeader.classList.remove('hidden');
+                wordList.innerHTML = '<p class="text-xs text-gray-400">اختر صفحة أولاً</p>';
+                mobileWordList.innerHTML = '<p class="text-xs text-gray-400">اختر صفحة أولاً</p>';
+                selectedPageLabel.classList.add('hidden');
+                mobileSelectedPageLabel.classList.add('hidden');
+                return;
+            }
+
+            lastSearchTerm = term;
+
+            if(wordsHeader) wordsHeader.classList.add('hidden');
+            if(mobileWordsHeader) mobileWordsHeader.classList.add('hidden');
+
+            const normalizedTerm = removeDiacritics(term);
+            const results = fullData.filter(item => {
+                const wordMatch = removeDiacritics(item.Word || '').toLowerCase().includes(normalizedTerm);
+                const infoMatch = removeDiacritics(item.Information || '').toLowerCase().includes(normalizedTerm);
+                return wordMatch || infoMatch;
+            });
+
+            if(results.length === 0) {
+                const noResultsMessage = '<div class="w-full text-center py-12 mt-8"><p class="text-red-600 font-bold text-base">لا توجد نتائج</p></div>';
+                wordList.innerHTML = noResultsMessage;
+                mobileWordList.innerHTML = noResultsMessage;
+                selectedPageLabel.classList.add('hidden');
+                mobileSelectedPageLabel.classList.add('hidden');
+                return;
+            }
+
+            const searchHTML = '<div class="h-2"></div>' + results.map(w => {
+                const index = fullData.indexOf(w);
+                const hasLook = w.unzur && w.unzur.includes("انظر");
+                const lookIcon = hasLook ? '<span class="text-red-600 mr-1">📎</span> ' : '';
+                const wordStyle = hasLook ? 'text-red-600 font-bold' : '';
+                const highlightedWord = highlightMatch(w.Word || '', e.target.value.trim());
+
+                return `
+    <button class="word-button" data-index="${index}">
+        <span class="${wordStyle}">${lookIcon}${highlightedWord}</span> 
+        <span>[س ${w.Line}]</span>
+    </button>
+`;
+            }).join('');
+
+            wordList.innerHTML = searchHTML;
+            mobileWordList.innerHTML = searchHTML;
+
+            document.querySelectorAll('.word-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const index = this.dataset.index;
+                    const item = fullData[index];
+                    showDetails(item.Word, item.Page, item.Information, item.media, item.links);
+                });
+            });
+
+            wordSidebar.scrollTop = 0;
+            const mobileParent = document.getElementById('mobileWordList').parentElement;
+            if(mobileParent) mobileParent.scrollTop = 0;
+            selectedPageLabel.classList.add('hidden');
+            mobileSelectedPageLabel.classList.add('hidden');
+        }
+
         // =============================================
         // Search Functions
         // =============================================
@@ -516,6 +650,7 @@ if (mediaFile && mediaFile.trim() !== "" && mediaFile !== "undefined") {
     const mobileWordsHeader = document.getElementById('mobileWordsHeader');
     
     if(term === "") {
+        lastSearchTerm = '';
         // 1. Show the labels again when search is cleared
         if(wordsHeader) wordsHeader.classList.remove('hidden');
         if(mobileWordsHeader) mobileWordsHeader.classList.remove('hidden');
@@ -529,6 +664,8 @@ if (mediaFile && mediaFile.trim() !== "" && mediaFile !== "undefined") {
         mobileSelectedPageLabel.classList.add('hidden');
         return;
     }
+
+    lastSearchTerm = term;
     
     // 2. Hide the labels whenever a search happens
     if(wordsHeader) wordsHeader.classList.add('hidden');
@@ -555,10 +692,11 @@ if (mediaFile && mediaFile.trim() !== "" && mediaFile !== "undefined") {
         const hasLook = w.unzur && w.unzur.includes("انظر");
         const lookIcon = hasLook ? '<span class="text-red-600 mr-1">📎</span> ' : '';
         const wordStyle = hasLook ? 'text-red-600 font-bold' : '';
+        const highlightedWord = highlightMatch(w.Word || '', e.target.value.trim());
 
         return `
     <button class="word-button" data-index="${index}">
-        <span class="${wordStyle}">${lookIcon}${w.Word}</span> 
+        <span class="${wordStyle}">${lookIcon}${highlightedWord}</span> 
         <span>[س ${w.Line}]</span>
     </button>
 `;
