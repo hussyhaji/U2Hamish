@@ -27,9 +27,101 @@
             padding: 0 0.15rem;
             border-radius: 0.2rem;
         }
+
+        /* Feature Pop-up Styles */
+        .feature-popup {
+            position: fixed;
+            z-index: 1000;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            max-width: 280px;
+            font-size: 14px;
+            animation: float 3s ease-in-out infinite, appearPop 0.6s ease-out;
+            top: 85px;
+            left: 15px;
+        }
+
+        .feature-popup::after {
+            content: '';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 12px solid #667eea;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+
+        .feature-popup-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feature-popup-text {
+            flex: 1;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .feature-popup-close {
+            background: rgba(255, 255, 255, 0.3);
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .feature-popup-close:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        @keyframes appearPop {
+            0% {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-50 h-screen flex flex-col">
+
+    <!-- Feature Pop-up -->
+    <div id="featurePopup" class="feature-popup" style="display: none;">
+        <div class="feature-popup-content">
+            <span class="text-xl">✨</span>
+            <div class="feature-popup-text">تحديث جديد: البحث المتقدم</div>
+            <button class="feature-popup-close" id="featurePopupClose">×</button>
+        </div>
+    </div>
 
     <!-- Header -->
     <header class="bg-white border-b p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -822,6 +914,31 @@ function navigateWords(direction) {
 // Attach listeners to the navigation buttons
 document.getElementById('prevWord').addEventListener('click', () => navigateWords(-1));
 document.getElementById('nextWord').addEventListener('click', () => navigateWords(1));
+
+        // =============================================
+        // Feature Pop-up
+        // =============================================
+        function showFeaturePopup() {
+            const popup = document.getElementById('featurePopup');
+            popup.style.display = 'block';
+        }
+
+        function closeFeaturePopup() {
+            const popup = document.getElementById('featurePopup');
+            popup.style.display = 'none';
+            localStorage.setItem('featurePopupClosed', 'true');
+        }
+
+        // Close button listener
+        document.getElementById('featurePopupClose').addEventListener('click', closeFeaturePopup);
+
+        // Show popup on page load if not previously closed
+        document.addEventListener('DOMContentLoaded', function() {
+            const isPopupClosed = localStorage.getItem('featurePopupClosed');
+            if (!isPopupClosed) {
+                setTimeout(showFeaturePopup, 500);
+            }
+        });
     </script>
 </body>
 </html>
