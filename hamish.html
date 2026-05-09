@@ -567,11 +567,12 @@ if (mediaFile && mediaFile.trim() !== "" && mediaFile !== "undefined") {
         }
 
         function handleAdvancedSearch(e) {
-            const term = e.target.value.trim().toLowerCase();
+            const rawTerm = e.target.value;
+            const term = rawTerm.toLowerCase();
             const wordsHeader = document.getElementById('wordsHeader');
             const mobileWordsHeader = document.getElementById('mobileWordsHeader');
 
-            if (term === "") {
+            if (term.trim() === "") {
                 lastSearchTerm = '';
                 if(wordsHeader) wordsHeader.classList.remove('hidden');
                 if(mobileWordsHeader) mobileWordsHeader.classList.remove('hidden');
@@ -608,7 +609,7 @@ if (mediaFile && mediaFile.trim() !== "" && mediaFile !== "undefined") {
                 const hasLook = w.unzur && w.unzur.includes("انظر");
                 const lookIcon = hasLook ? '<span class="text-red-600 mr-1">📎</span> ' : '';
                 const wordStyle = hasLook ? 'text-red-600 font-bold' : '';
-                const highlightedWord = highlightMatch(w.Word || '', e.target.value.trim());
+                const highlightedWord = highlightMatch(w.Word || '', rawTerm);
 
                 return `
     <button class="word-button" data-index="${index}">
