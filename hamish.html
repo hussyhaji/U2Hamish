@@ -73,6 +73,26 @@
         <p class="mt-2 text-xs text-gray-500">يبحث هذا في جميع الكلمات والمعلومات داخل البيانات كاملة ويعرض النتائج في مربع قائمة الكلمات.</p>
     </div>
 
+    <!-- Mobile Advanced Search Modal -->
+    <div id="mobileAdvancedSearchModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+        <div class="w-full max-w-lg rounded-3xl bg-white p-4 shadow-xl">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-base font-bold">بحث متقدم</h2>
+                <button id="mobileAdvancedSearchClose" class="text-gray-500 hover:text-gray-900">✕</button>
+            </div>
+            <input
+                type="text"
+                id="mobileAdvancedSearchInput"
+                placeholder="ابحث عن كلمة أو معلومات..."
+                class="border rounded-lg px-3 py-2 w-full text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            <div class="mt-4 flex gap-2">
+                <button id="mobileAdvancedSearchGo" class="flex-1 rounded-lg bg-blue-600 text-white px-4 py-2 hover:bg-blue-700 text-sm">بحث</button>
+                <button id="mobileAdvancedSearchCancel" class="flex-1 rounded-lg border border-gray-300 bg-white text-gray-700 px-4 py-2 hover:bg-gray-100 text-sm">إلغاء</button>
+            </div>
+            <p class="mt-2 text-xs text-gray-500">استخدم هذا الزر للحصول على نتائج في مربع قائمة الكلمات.</p>
+        </div>
+    </div>
+
     <!-- Main Container -->
     <div class="flex flex-1 overflow-hidden">
         
@@ -232,6 +252,11 @@
         const advancedSearchPanel = document.getElementById('advancedSearchPanel');
         const advancedSearchInput = document.getElementById('advancedSearchInput');
         const advancedSearchClear = document.getElementById('advancedSearchClear');
+        const mobileAdvancedSearchModal = document.getElementById('mobileAdvancedSearchModal');
+        const mobileAdvancedSearchInput = document.getElementById('mobileAdvancedSearchInput');
+        const mobileAdvancedSearchGo = document.getElementById('mobileAdvancedSearchGo');
+        const mobileAdvancedSearchClose = document.getElementById('mobileAdvancedSearchClose');
+        const mobileAdvancedSearchCancel = document.getElementById('mobileAdvancedSearchCancel');
         const pageSidebar = document.getElementById('pageSidebar');
         const wordSidebar = document.getElementById('wordSidebar');
         const welcomeMessage = document.getElementById('welcomeMessage');
@@ -246,9 +271,22 @@
         // =============================================
         menuToggle.addEventListener('click', toggleMobileMenu);
         searchInput.addEventListener('input', handleSearch);
-        advancedSearchToggle.addEventListener('click', toggleAdvancedSearchPanel);
+        advancedSearchToggle.addEventListener('click', handleAdvancedSearchToggle);
         advancedSearchInput.addEventListener('input', handleAdvancedSearch);
         advancedSearchClear.addEventListener('click', clearAdvancedSearch);
+        mobileAdvancedSearchGo.addEventListener('click', () => {
+            performAdvancedSearch(mobileAdvancedSearchInput.value);
+            closeMobileAdvancedSearchModal();
+            scrollToResults();
+        });
+        mobileAdvancedSearchClose.addEventListener('click', closeMobileAdvancedSearchModal);
+        mobileAdvancedSearchCancel.addEventListener('click', closeMobileAdvancedSearchModal);
+        mobileAdvancedSearchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                mobileAdvancedSearchGo.click();
+            }
+        });
         document.getElementById('pageSearchInput').addEventListener('input', handlePageSearch);
         document.getElementById('mobilePageSearchInput').addEventListener('input', handlePageSearch);
         
@@ -547,27 +585,28 @@ if (mediaFile && mediaFile.trim() !== "" && mediaFile !== "undefined") {
             return text.replace(regex, match => `<mark class="search-highlight">${match}</mark>`);
         }
 
-        function toggleAdvancedSearchPanel() {
-            advancedSearchPanel.classList.toggle('hidden');
-            if (!advancedSearchPanel.classList.contains('hidden')) {
-                advancedSearchInput.focus();
-            }
-        }
-
-        function clearAdvancedSearch() {
-            advancedSearchInput.value = '';
-            wordList.innerHTML = '<p class="text-xs text-gray-400">اختر صفحة أولاً</p>';
-            mobileWordList.innerHTML = '<p class="text-xs text-gray-400">اختر صفحة أولاً</p>';
-            selectedPageLabel.classList.add('hidden');
-            mobileSelectedPageLabel.classList.add('hidden');
+        function handleAdvancedSearchToggle() {
             if (window.innerWidth < 768) {
-                const mobileWordsBox = document.getElementById('mobileWordsBox');
-                if (mobileWordsBox) mobileWordsBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                openMobileAdvancedSearchModal();
+            } else {
+                advancedSearchPanel.classList.toggle('hidden');
+                if (!advancedSearchPanel.classList.contains('hidden')) {
+                    advancedSearchInput.focus();
+                }
             }
         }
 
-        function handleAdvancedSearch(e) {
-            const rawTerm = e.target.value;
+        function openMobileAdvancedSearchModal() {
+            mobileAdvancedSearchInput.value = '';
+            mobileAdvancedSearchModal.classList.remove('hidden');
+            setTimeout(() => mobileAdvancedSearchInput.focus(), 100);
+        }
+
+        function closeMobileAdvancedSearchModal() {
+            mobileAdvancedSearchModal.classList.add('hidden');
+        }
+
+        function performAdvancedSearch(rawTerm) {
             const term = rawTerm.toLowerCase();
             const wordsHeader = document.getElementById('wordsHeader');
             const mobileWordsHeader = document.getElementById('mobileWordsHeader');
@@ -584,7 +623,6 @@ if (mediaFile && mediaFile.trim() !== "" && mediaFile !== "undefined") {
             }
 
             lastSearchTerm = term;
-
             if(wordsHeader) wordsHeader.classList.add('hidden');
             if(mobileWordsHeader) mobileWordsHeader.classList.add('hidden');
 
@@ -630,11 +668,40 @@ if (mediaFile && mediaFile.trim() !== "" && mediaFile !== "undefined") {
                 });
             });
 
-            wordSidebar.scrollTop = 0;
-            const mobileParent = document.getElementById('mobileWordList').parentElement;
-            if(mobileParent) mobileParent.scrollTop = 0;
             selectedPageLabel.classList.add('hidden');
             mobileSelectedPageLabel.classList.add('hidden');
+            scrollToResults();
+        }
+
+        function scrollToResults() {
+            if (window.innerWidth < 768) {
+                const mobileWordsBox = document.getElementById('mobileWordsBox');
+                if (mobileWordsBox) {
+                    mobileWordsBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            } else {
+                if (wordSidebar) {
+                    wordSidebar.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        }
+
+        function clearAdvancedSearch() {
+            advancedSearchInput.value = '';
+            mobileAdvancedSearchInput.value = '';
+            closeMobileAdvancedSearchModal();
+            wordList.innerHTML = '<p class="text-xs text-gray-400">اختر صفحة أولاً</p>';
+            mobileWordList.innerHTML = '<p class="text-xs text-gray-400">اختر صفحة أولاً</p>';
+            selectedPageLabel.classList.add('hidden');
+            mobileSelectedPageLabel.classList.add('hidden');
+            if (window.innerWidth < 768) {
+                const mobileWordsBox = document.getElementById('mobileWordsBox');
+                if (mobileWordsBox) mobileWordsBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function handleAdvancedSearch(e) {
+            performAdvancedSearch(e.target.value);
         }
 
         // =============================================
