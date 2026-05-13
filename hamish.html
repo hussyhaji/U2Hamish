@@ -259,6 +259,13 @@
                 
                 <div class="bg-white border shadow-sm rounded-xl p-4 sm:p-8 min-h-[400px]">
                     <h3 class="text-gray-400 text-sm mb-4"></h3>
+                    <div id="fontSizeControls" class="flex flex-wrap items-center justify-end gap-2 mb-4 text-sm">
+                        <span class="text-gray-500">حجم الخط:</span>
+                        <button id="decreaseFont" class="border border-gray-300 bg-white px-3 py-2 rounded-lg hover:bg-gray-100 transition">−</button>
+                        <button id="resetFont" class="border border-gray-300 bg-gray-100 px-3 py-2 rounded-lg hover:bg-gray-200 transition">إعادة</button>
+                        <button id="increaseFont" class="border border-gray-300 bg-white px-3 py-2 rounded-lg hover:bg-gray-100 transition">+</button>
+                        <span id="fontSizeLabel" class="text-gray-600">100%</span>
+                    </div>
                     <p id="displayInfo" class="text-lg sm:text-xl text-gray-800" dir="auto" style="unicode-bidi: plaintext;"></p>
                     
                    <div id="mediaContainer" class="mt-4 border-t pt-4 hidden">
@@ -320,6 +327,36 @@
             localStorage.removeItem('wordWidth');
         }
         
+        function applyFontSize(size) {
+            displayInfo.style.fontSize = `${size}rem`;
+            fontSizeLabel.textContent = `${Math.round(size * 100)}%`;
+        }
+
+        function loadFontSize() {
+            const savedSize = parseFloat(localStorage.getItem('detailsFontSize'));
+            if (!isNaN(savedSize) && savedSize >= 0.8 && savedSize <= 4.0) {
+                applyFontSize(savedSize);
+            } else {
+                applyFontSize(1.0);
+            }
+        }
+
+        function saveFontSize(size) {
+            localStorage.setItem('detailsFontSize', size);
+        }
+
+        function adjustFontSize(delta) {
+            const currentSize = parseFloat(getComputedStyle(displayInfo).fontSize) / 16;
+            const nextSize = Math.min(Math.max(currentSize + delta, 0.8), 4.0);
+            applyFontSize(nextSize);
+            saveFontSize(nextSize);
+        }
+
+        function resetFontSize() {
+            applyFontSize(1.0);
+            localStorage.removeItem('detailsFontSize');
+        }
+        
         // Load widths on page load
         loadWidths();
         
@@ -353,10 +390,15 @@
         const wordSidebar = document.getElementById('wordSidebar');
         const welcomeMessage = document.getElementById('welcomeMessage');
         const detailsArea = document.getElementById('detailsArea');
+        const displayInfo = document.getElementById('displayInfo');
+        const fontSizeLabel = document.getElementById('fontSizeLabel');
         const selectedPageLabel = document.getElementById('selectedPageLabel');
         const selectedPageNumber = document.getElementById('selectedPageNumber');
         const mobileSelectedPageLabel = document.getElementById('mobileSelectedPageLabel');
         const mobileSelectedPageNumber = document.getElementById('mobileSelectedPageNumber');
+
+        // Load saved font size after DOM elements exist
+        loadFontSize();
 
         // =============================================
         // Event Listeners
@@ -386,6 +428,11 @@
         document.getElementById('decreaseWidth').addEventListener('click', () => adjustWidths(-WIDTH_STEP));
         document.getElementById('increaseWidth').addEventListener('click', () => adjustWidths(WIDTH_STEP));
         document.getElementById('resetWidth').addEventListener('click', resetWidths);
+
+        // Font size adjustment buttons for the information box
+        document.getElementById('decreaseFont').addEventListener('click', () => adjustFontSize(-0.1));
+        document.getElementById('increaseFont').addEventListener('click', () => adjustFontSize(0.1));
+        document.getElementById('resetFont').addEventListener('click', resetFontSize);
 
         // Load CSV Data
         Papa.parse("data.csv", {
