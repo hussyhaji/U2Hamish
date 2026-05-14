@@ -110,6 +110,7 @@
                 transform: translateY(0);
             }
         }
+
     </style>
 </head>
 <body class="bg-gray-50 h-screen flex flex-col">
@@ -242,15 +243,23 @@
 
             <!-- Details Display Area -->
             <div id="detailsArea" class="hidden">
-                <div class="flex justify-between items-center mb-4 border-b pb-4">
-    <button id="prevWord" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
-        <span>→</span> السابق
-    </button>
-    <button id="nextWord" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
-        التالي <span>←</span>
-    </button>
-</div>
-
+                <div class="flex flex-wrap justify-between items-center mb-4 border-b pb-4 gap-4">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button id="prevWord" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+                            <span>→</span> السابق
+                        </button>
+                        <button id="nextWord" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+                            التالي <span>←</span>
+                        </button>
+                    </div>
+                    <div id="fontSizeControls" class="flex flex-wrap items-center gap-2 text-sm">
+                        <span class="text-gray-500">حجم الخط:</span>
+                        <button id="decreaseFont" class="border border-gray-300 bg-white px-3 py-2 rounded-lg hover:bg-gray-100 transition">−</button>
+                        <button id="resetFont" class="border border-gray-300 bg-gray-100 px-3 py-2 rounded-lg hover:bg-gray-200 transition">إعادة</button>
+                        <button id="increaseFont" class="border border-gray-300 bg-white px-3 py-2 rounded-lg hover:bg-gray-100 transition">+</button>
+                        <span id="fontSizeLabel" class="text-gray-600">100%</span>
+                    </div>
+                </div>
 
                 <div class="flex gap-4 mb-6">
                     <div class="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg font-bold">صفحة: <span id="displayPage"></span></div>
@@ -259,13 +268,6 @@
                 
                 <div class="bg-white border shadow-sm rounded-xl p-4 sm:p-8 min-h-[400px]">
                     <h3 class="text-gray-400 text-sm mb-4"></h3>
-                    <div id="fontSizeControls" class="flex flex-wrap items-center justify-end gap-2 mb-4 text-sm">
-                        <span class="text-gray-500">حجم الخط:</span>
-                        <button id="decreaseFont" class="border border-gray-300 bg-white px-3 py-2 rounded-lg hover:bg-gray-100 transition">−</button>
-                        <button id="resetFont" class="border border-gray-300 bg-gray-100 px-3 py-2 rounded-lg hover:bg-gray-200 transition">إعادة</button>
-                        <button id="increaseFont" class="border border-gray-300 bg-white px-3 py-2 rounded-lg hover:bg-gray-100 transition">+</button>
-                        <span id="fontSizeLabel" class="text-gray-600">100%</span>
-                    </div>
                     <p id="displayInfo" class="text-lg sm:text-xl text-gray-800" dir="auto" style="unicode-bidi: plaintext;"></p>
                     
                    <div id="mediaContainer" class="mt-4 border-t pt-4 hidden">
